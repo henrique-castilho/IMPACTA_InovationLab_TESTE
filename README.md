@@ -10,5 +10,6 @@ Aluno: Henrique Castilho
 - Git & GitHub
 - VS Code
 - Node.js
-- OpenSpec
-- Xano
+- React
+- Java
+- SpringBoot
