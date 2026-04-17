@@ -1,0 +1,9 @@
+@import './TelaLogin.css';
+
+.cartao-autenticacao.cadastro form {
+  gap: 11px;
+}
+
+.cartao-autenticacao.cadastro .botao-primario {
+  margin-top: 8px;
+}

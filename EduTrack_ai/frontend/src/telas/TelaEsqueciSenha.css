@@ -1,0 +1,154 @@
+.caixa-recuperacao {
+  width: min(460px, 100%);
+  background: var(--cor-card);
+  border: 1px solid #e2e8f3;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: var(--sombra-card);
+}
+
+.form-etapa {
+  display: grid;
+  gap: 10px;
+}
+
+.topo-etapa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.topo-etapa h2 {
+  margin: 0;
+}
+
+.form-etapa h2 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.form-etapa p {
+  margin: 0 0 6px;
+  color: var(--cor-texto-suave);
+}
+
+.form-etapa label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.form-etapa input {
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.campo-senha-recuperacao {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.campo-senha-recuperacao input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.form-etapa input:focus {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 2px rgba(79, 61, 227, 0.16);
+}
+
+.botao-secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d8def0;
+  border-radius: 10px;
+  min-height: 42px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.botao-voltar {
+  border: 0;
+  background: transparent;
+  color: var(--cor-primaria);
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+}
+
+.botao-olho {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.link-acao {
+  border: 0;
+  background: transparent;
+  color: var(--cor-primaria);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mensagem-erro {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.etapa-sucesso {
+  text-align: center;
+  padding: 22px 14px;
+}
+
+.icone-sucesso {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 10px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #dcfce7;
+  color: var(--cor-sucesso);
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.etapa-sucesso h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.etapa-sucesso p {
+  margin: 8px 0 0;
+  color: #475569;
+}
+
+.etapa-sucesso small {
+  display: block;
+  margin-top: 14px;
+  color: #64748b;
+}
+
+@media (max-width: 540px) {
+  .caixa-recuperacao {
+    padding: 16px;
+  }
+
+  .form-etapa h2,
+  .etapa-sucesso h2 {
+    font-size: 1.48rem;
+  }
+}

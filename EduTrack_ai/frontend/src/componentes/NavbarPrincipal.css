@@ -1,0 +1,103 @@
+.navbar-principal {
+  background: #ffffff;
+  border: 1px solid #dce6fb;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(36, 62, 122, 0.08);
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.navbar-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6c5bff 0%, #3f2fc8 100%);
+}
+
+.navbar-logo-area strong {
+  display: block;
+  color: #151f35;
+  font-size: 0.95rem;
+}
+
+.navbar-logo-area small {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.navbar-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.navbar-links a:hover {
+  text-decoration: none;
+  border-color: #d4ddf8;
+  background: #f6f8fe;
+}
+
+.navbar-links .ativo {
+  color: #3b2fe0;
+  background: #ecebff;
+}
+
+.botao-sair {
+  justify-self: start;
+  border: 1px solid #fecaca;
+  background: #fff5f5;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.botao-sair:hover {
+  background: #ffe8e8;
+}
+
+@media (min-width: 960px) {
+  .navbar-principal {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+  }
+
+  .navbar-links {
+    justify-self: center;
+  }
+
+  .botao-sair {
+    justify-self: end;
+  }
+}

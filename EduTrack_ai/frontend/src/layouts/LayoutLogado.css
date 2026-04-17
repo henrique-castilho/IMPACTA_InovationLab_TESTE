@@ -1,0 +1,18 @@
+.layout-logado {
+  min-height: 100vh;
+  padding: 14px;
+}
+
+.layout-conteudo {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 768px) {
+  .layout-logado {
+    padding: 22px;
+  }
+}
