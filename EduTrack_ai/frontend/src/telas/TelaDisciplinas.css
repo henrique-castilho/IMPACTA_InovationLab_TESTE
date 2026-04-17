@@ -117,6 +117,24 @@
   white-space: nowrap;
 }
 
+.detalhes-disciplina {
+  display: grid;
+  gap: 4px;
+}
+
+.detalhes-disciplina p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.detalhes-disciplina small {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.74rem;
+}
+
 .card-disciplina-gestao footer {
   display: grid;
   grid-template-columns: 1fr auto;

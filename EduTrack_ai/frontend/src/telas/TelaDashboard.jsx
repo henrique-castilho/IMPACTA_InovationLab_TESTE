@@ -21,6 +21,9 @@ const DISCIPLINAS_INICIAIS = [
     nome: 'Algoritmos e Programacao',
     professor: 'Prof. Carlos Silva',
     cargaHoraria: 42,
+    descricao: 'Fundamentos de logica, estruturas de controle e resolucao de problemas.',
+    dataInicio: '2026-02-03',
+    dataFim: '2026-06-28',
     tarefasConcluidas: 12,
     tarefasTotais: 17,
   },
@@ -29,6 +32,9 @@ const DISCIPLINAS_INICIAIS = [
     nome: 'Banco de Dados',
     professor: 'Profa. Ana Santos',
     cargaHoraria: 30,
+    descricao: 'Modelagem relacional, SQL e normalizacao aplicada ao projeto.',
+    dataInicio: '2026-02-05',
+    dataFim: '2026-06-25',
     tarefasConcluidas: 5,
     tarefasTotais: 10,
   },
@@ -37,6 +43,9 @@ const DISCIPLINAS_INICIAIS = [
     nome: 'Desenvolvimento Web',
     professor: 'Prof. Ricardo Lima',
     cargaHoraria: 38,
+    descricao: 'Interfaces web modernas com foco em experiencia do usuario.',
+    dataInicio: '2026-02-10',
+    dataFim: '2026-06-30',
     tarefasConcluidas: 11,
     tarefasTotais: 13,
   },
@@ -45,6 +54,9 @@ const DISCIPLINAS_INICIAIS = [
     nome: 'Engenharia de Software',
     professor: 'Profa. Maria Costa',
     cargaHoraria: 48,
+    descricao: 'Metodos ageis, requisitos e qualidade de software em equipes.',
+    dataInicio: '2026-02-01',
+    dataFim: '2026-07-05',
     tarefasConcluidas: 7,
     tarefasTotais: 15,
   },
@@ -150,6 +162,9 @@ export function TelaDashboard() {
     nome: '',
     professor: '',
     cargaHoraria: '',
+    descricao: '',
+    dataInicio: '',
+    dataFim: '',
   })
 
   const resumo = useMemo(() => {
@@ -225,7 +240,18 @@ export function TelaDashboard() {
     event.preventDefault()
 
     const cargaHorariaNumero = Number(formularioDisciplina.cargaHoraria)
-    if (!formularioDisciplina.nome || !formularioDisciplina.professor || !cargaHorariaNumero) {
+    if (
+      !formularioDisciplina.nome ||
+      !formularioDisciplina.professor ||
+      !cargaHorariaNumero ||
+      !formularioDisciplina.descricao ||
+      !formularioDisciplina.dataInicio ||
+      !formularioDisciplina.dataFim
+    ) {
+      return
+    }
+
+    if (formularioDisciplina.dataFim < formularioDisciplina.dataInicio) {
       return
     }
 
@@ -234,12 +260,22 @@ export function TelaDashboard() {
       nome: formularioDisciplina.nome,
       professor: formularioDisciplina.professor,
       cargaHoraria: cargaHorariaNumero,
+      descricao: formularioDisciplina.descricao,
+      dataInicio: formularioDisciplina.dataInicio,
+      dataFim: formularioDisciplina.dataFim,
       tarefasConcluidas: 0,
       tarefasTotais: 0,
     }
 
     setDisciplinas((atual) => [...atual, novaDisciplina])
-    setFormularioDisciplina({ nome: '', professor: '', cargaHoraria: '' })
+    setFormularioDisciplina({
+      nome: '',
+      professor: '',
+      cargaHoraria: '',
+      descricao: '',
+      dataInicio: '',
+      dataFim: '',
+    })
     setAbrirModal(false)
   }
 
@@ -478,6 +514,36 @@ export function TelaDashboard() {
                 value={formularioDisciplina.cargaHoraria}
                 onChange={handleInput}
                 placeholder="Ex: 60"
+                required
+              />
+
+              <label htmlFor="descricao">Descricao</label>
+              <input
+                id="descricao"
+                name="descricao"
+                value={formularioDisciplina.descricao}
+                onChange={handleInput}
+                placeholder="Ex: Conteudo e objetivos da disciplina"
+                required
+              />
+
+              <label htmlFor="dataInicio">Data de inicio</label>
+              <input
+                id="dataInicio"
+                name="dataInicio"
+                type="date"
+                value={formularioDisciplina.dataInicio}
+                onChange={handleInput}
+                required
+              />
+
+              <label htmlFor="dataFim">Data de fim</label>
+              <input
+                id="dataFim"
+                name="dataFim"
+                type="date"
+                value={formularioDisciplina.dataFim}
+                onChange={handleInput}
                 required
               />
 
