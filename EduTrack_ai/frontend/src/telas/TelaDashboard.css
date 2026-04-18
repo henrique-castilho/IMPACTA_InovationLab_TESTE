@@ -130,6 +130,14 @@
   height: 250px;
 }
 
+.area-grafico .recharts-wrapper:focus,
+.area-grafico .recharts-surface:focus,
+.area-grafico svg:focus,
+.area-grafico *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .legenda-pizza {
   margin: 10px 0 0;
   padding: 0;

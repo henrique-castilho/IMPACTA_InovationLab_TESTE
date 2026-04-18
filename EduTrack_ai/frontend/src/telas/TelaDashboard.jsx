@@ -387,7 +387,23 @@ export function TelaDashboard() {
                   axisLine={{ stroke: 'var(--cor-borda)' }}
                   tickLine={{ stroke: 'var(--cor-borda)' }}
                 />
-                <Tooltip />
+                <Tooltip
+                  cursor={false}
+                  contentStyle={{
+                    backgroundColor: 'var(--cor-card)',
+                    border: '1px solid var(--cor-borda)',
+                    borderRadius: '10px',
+                  }}
+                  labelStyle={{ color: 'var(--cor-texto)', fontWeight: 700 }}
+                  itemStyle={{ color: 'var(--cor-texto-suave)', fontWeight: 600 }}
+                  formatter={(valor, nome) => {
+                    if (nome === 'Total') {
+                      return [<span style={{ color: 'var(--cor-texto)' }}>{valor}</span>, nome]
+                    }
+
+                    return [<span style={{ color: '#10b981' }}>{valor}</span>, nome]
+                  }}
+                />
                 <Bar dataKey="total" fill="#d5dde8" name="Total" barSize={28} radius={[6, 6, 0, 0]} />
                 <Bar dataKey="concluidas" fill="#10b981" name="Concluidas" barSize={16} radius={[6, 6, 0, 0]} />
               </BarChart>
