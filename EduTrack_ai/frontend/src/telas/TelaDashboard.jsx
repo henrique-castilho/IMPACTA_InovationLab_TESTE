@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Bar,
   BarChart,
@@ -14,6 +14,13 @@ import {
 import './TelaDashboard.css'
 
 const CORES_GRAFICO = ['#4f46e5', '#0ea5a3', '#f59e0b', '#22c55e', '#7c3aed']
+const ITENS_POR_PAGINA_DISCIPLINAS = 6
+const ITENS_POR_PAGINA_TAREFAS = 4
+const ORDEM_PRIORIDADE = {
+  ALTA: 0,
+  MEDIA: 1,
+  BAIXA: 2,
+}
 
 const DISCIPLINAS_INICIAIS = [
   {
@@ -60,6 +67,39 @@ const DISCIPLINAS_INICIAIS = [
     tarefasConcluidas: 7,
     tarefasTotais: 15,
   },
+  {
+    id: 5,
+    nome: 'Inteligencia Artificial',
+    professor: 'Prof. Roberto Almeida',
+    cargaHoraria: 36,
+    descricao: 'Introducao a modelos de IA, classificacao e regressao.',
+    dataInicio: '2026-02-12',
+    dataFim: '2026-07-01',
+    tarefasConcluidas: 4,
+    tarefasTotais: 9,
+  },
+  {
+    id: 6,
+    nome: 'Arquitetura de Computadores',
+    professor: 'Profa. Daniela Rocha',
+    cargaHoraria: 32,
+    descricao: 'Organizacao de hardware, processadores e memoria.',
+    dataInicio: '2026-02-08',
+    dataFim: '2026-06-29',
+    tarefasConcluidas: 6,
+    tarefasTotais: 11,
+  },
+  {
+    id: 7,
+    nome: 'Seguranca da Informacao',
+    professor: 'Prof. Marcos Ferreira',
+    cargaHoraria: 28,
+    descricao: 'Principios de seguranca, ameacas e boas praticas.',
+    dataInicio: '2026-02-14',
+    dataFim: '2026-06-27',
+    tarefasConcluidas: 3,
+    tarefasTotais: 8,
+  },
 ]
 
 const TAREFAS_MOCK = [
@@ -73,14 +113,22 @@ const TAREFAS_MOCK = [
   },
   {
     id: 2,
+    titulo: 'Preparar apresentacao de sprint',
+    disciplinaId: 4,
+    disciplina: 'Engenharia de Software',
+    status: 'PENDENTE',
+    diasParaEntrega: 0,
+  },
+  {
+    id: 3,
     titulo: 'Lista SQL - Joins e Views',
     disciplinaId: 2,
     disciplina: 'Banco de Dados',
     status: 'PENDENTE',
-    diasParaEntrega: 2,
+    diasParaEntrega: 3,
   },
   {
-    id: 3,
+    id: 4,
     titulo: 'Refatorar validacoes do formulario',
     disciplinaId: 3,
     disciplina: 'Desenvolvimento Web',
@@ -88,7 +136,7 @@ const TAREFAS_MOCK = [
     diasParaEntrega: 4,
   },
   {
-    id: 4,
+    id: 5,
     titulo: 'Checkpoint de algoritmos recursivos',
     disciplinaId: 1,
     disciplina: 'Algoritmos e Programacao',
@@ -96,12 +144,20 @@ const TAREFAS_MOCK = [
     diasParaEntrega: 6,
   },
   {
-    id: 5,
-    titulo: 'Atualizar documentacao do sprint',
-    disciplinaId: 4,
-    disciplina: 'Engenharia de Software',
-    status: 'CONCLUIDA',
-    diasParaEntrega: 1,
+    id: 6,
+    titulo: 'Exercicio de classificacao supervisionada',
+    disciplinaId: 5,
+    disciplina: 'Inteligencia Artificial',
+    status: 'PENDENTE',
+    diasParaEntrega: 5,
+  },
+  {
+    id: 7,
+    titulo: 'Resumo sobre memoria cache',
+    disciplinaId: 6,
+    disciplina: 'Arquitetura de Computadores',
+    status: 'PENDENTE',
+    diasParaEntrega: 7,
   },
 ]
 
@@ -154,10 +210,94 @@ function formatarPrazo(dataEntrega) {
   return `${dias} dias`
 }
 
+function aplicarPaginacaoTemporaria(lista, paginaAtual, itensPorPagina) {
+  const inicio = (paginaAtual - 1) * itensPorPagina
+  return lista.slice(inicio, inicio + itensPorPagina)
+}
+
+function montarPaginasVisiveis(totalPaginas, paginaAtual) {
+  if (totalPaginas <= 7) {
+    return Array.from({ length: totalPaginas }, (_, indice) => indice + 1)
+  }
+
+  if (paginaAtual <= 4) {
+    return [1, 2, 3, 4, 5, '...', totalPaginas]
+  }
+
+  if (paginaAtual >= totalPaginas - 3) {
+    return [1, '...', totalPaginas - 4, totalPaginas - 3, totalPaginas - 2, totalPaginas - 1, totalPaginas]
+  }
+
+  return [1, '...', paginaAtual - 1, paginaAtual, paginaAtual + 1, '...', totalPaginas]
+}
+
+function PaginacaoNumerada({
+  paginaAtual,
+  totalPaginas,
+  onChange,
+  ariaLabel,
+}) {
+  if (totalPaginas <= 1) {
+    return null
+  }
+
+  const paginasVisiveis = montarPaginasVisiveis(totalPaginas, paginaAtual)
+
+  return (
+    <nav className="paginacao" aria-label={ariaLabel}>
+      <button
+        type="button"
+        className="paginacao-botao"
+        onClick={() => onChange(paginaAtual - 1)}
+        disabled={paginaAtual === 1}
+        aria-label="Pagina anterior"
+      >
+        {'<'}
+      </button>
+
+      {paginasVisiveis.map((pagina, indice) => {
+        if (pagina === '...') {
+          return (
+            <span key={`ellipsis-${indice}`} className="paginacao-reticencias" aria-hidden="true">
+              ...
+            </span>
+          )
+        }
+
+        const ativa = paginaAtual === pagina
+        return (
+          <button
+            key={pagina}
+            type="button"
+            className={`paginacao-botao ${ativa ? 'paginacao-botao-ativo' : ''}`}
+            onClick={() => onChange(pagina)}
+            aria-current={ativa ? 'page' : undefined}
+            aria-label={`Ir para pagina ${pagina}`}
+          >
+            {pagina}
+          </button>
+        )
+      })}
+
+      <button
+        type="button"
+        className="paginacao-botao"
+        onClick={() => onChange(paginaAtual + 1)}
+        disabled={paginaAtual === totalPaginas}
+        aria-label="Proxima pagina"
+      >
+        {'>'}
+      </button>
+    </nav>
+  )
+}
+
 export function TelaDashboard() {
   const [disciplinas, setDisciplinas] = useState(DISCIPLINAS_INICIAIS)
   const [abrirModal, setAbrirModal] = useState(false)
   const [disciplinaSelecionadaId, setDisciplinaSelecionadaId] = useState(null)
+  const [paginaAtualDisciplinas, setPaginaAtualDisciplinas] = useState(1)
+  const [paginaAtualTarefas, setPaginaAtualTarefas] = useState(1)
   const [formularioDisciplina, setFormularioDisciplina] = useState({
     nome: '',
     professor: '',
@@ -203,6 +343,8 @@ export function TelaDashboard() {
   )
 
   const tarefasPriorizadas = useMemo(() => {
+    // Temporario: esta ordenacao e paginacao local simulam os dados da API; quando o backend estiver pronto,
+    // a tela vai apenas exibir a ordem e a pagina recebidas pelo servidor.
     return TAREFAS_MOCK.map((tarefa) => {
       const dataEntrega = criarDataEmDias(tarefa.diasParaEntrega)
       const prioridade = calcularPrioridade(dataEntrega, tarefa.status)
@@ -211,8 +353,18 @@ export function TelaDashboard() {
         ...tarefa,
         prioridade,
         prazo: formatarPrazo(dataEntrega),
+        prazoDias: tarefa.diasParaEntrega,
       }
-    }).filter((tarefa) => tarefa.prioridade === 'ALTA' || tarefa.prioridade === 'MEDIA')
+    })
+      .filter((tarefa) => tarefa.prioridade === 'ALTA' || tarefa.prioridade === 'MEDIA')
+      .sort((a, b) => {
+        const ordemPrioridade = ORDEM_PRIORIDADE[a.prioridade] - ORDEM_PRIORIDADE[b.prioridade]
+        if (ordemPrioridade !== 0) {
+          return ordemPrioridade
+        }
+
+        return a.prazoDias - b.prazoDias
+      })
   }, [])
 
   const tarefasPriorizadasVisiveis = useMemo(() => {
@@ -223,6 +375,31 @@ export function TelaDashboard() {
     return tarefasPriorizadas.filter((tarefa) => tarefa.disciplinaId === disciplinaSelecionadaId)
   }, [tarefasPriorizadas, disciplinaSelecionadaId])
 
+  const totalPaginasDisciplinas = useMemo(
+    () => Math.max(1, Math.ceil(disciplinas.length / ITENS_POR_PAGINA_DISCIPLINAS)),
+    [disciplinas.length],
+  )
+
+  const totalPaginasTarefas = useMemo(
+    () => Math.max(1, Math.ceil(tarefasPriorizadasVisiveis.length / ITENS_POR_PAGINA_TAREFAS)),
+    [tarefasPriorizadasVisiveis.length],
+  )
+
+  const disciplinasPaginadas = useMemo(
+    () => aplicarPaginacaoTemporaria(disciplinas, paginaAtualDisciplinas, ITENS_POR_PAGINA_DISCIPLINAS),
+    [disciplinas, paginaAtualDisciplinas],
+  )
+
+  const tarefasPriorizadasPaginadas = useMemo(
+    () =>
+      aplicarPaginacaoTemporaria(
+        tarefasPriorizadasVisiveis,
+        paginaAtualTarefas,
+        ITENS_POR_PAGINA_TAREFAS,
+      ),
+    [tarefasPriorizadasVisiveis, paginaAtualTarefas],
+  )
+
   const disciplinaSelecionada = useMemo(() => {
     if (!disciplinaSelecionadaId) {
       return null
@@ -230,6 +407,22 @@ export function TelaDashboard() {
 
     return disciplinas.find((disciplina) => disciplina.id === disciplinaSelecionadaId) ?? null
   }, [disciplinas, disciplinaSelecionadaId])
+
+  useEffect(() => {
+    setPaginaAtualTarefas(1)
+  }, [disciplinaSelecionadaId])
+
+  useEffect(() => {
+    if (paginaAtualDisciplinas > totalPaginasDisciplinas) {
+      setPaginaAtualDisciplinas(totalPaginasDisciplinas)
+    }
+  }, [paginaAtualDisciplinas, totalPaginasDisciplinas])
+
+  useEffect(() => {
+    if (paginaAtualTarefas > totalPaginasTarefas) {
+      setPaginaAtualTarefas(totalPaginasTarefas)
+    }
+  }, [paginaAtualTarefas, totalPaginasTarefas])
 
   function handleInput(event) {
     const { name, value } = event.target
@@ -422,7 +615,7 @@ export function TelaDashboard() {
           </div>
 
           <div className="lista-disciplinas">
-            {disciplinas.map((item) => {
+            {disciplinasPaginadas.map((item) => {
               const progresso =
                 item.tarefasTotais === 0
                   ? 0
@@ -468,6 +661,15 @@ export function TelaDashboard() {
               )
             })}
           </div>
+
+          <div className="paginacao-area">
+            <PaginacaoNumerada
+              paginaAtual={paginaAtualDisciplinas}
+              totalPaginas={totalPaginasDisciplinas}
+              onChange={setPaginaAtualDisciplinas}
+              ariaLabel="Paginacao de disciplinas"
+            />
+          </div>
         </article>
 
         <aside className="card-prioritarias" id="secao-prioritarias">
@@ -485,7 +687,7 @@ export function TelaDashboard() {
           )}
 
           <div className="lista-prioritarias">
-            {tarefasPriorizadasVisiveis.map((tarefa) => (
+            {tarefasPriorizadasPaginadas.map((tarefa) => (
               <article
                 key={tarefa.id}
                 className={`item-prioritaria ${tarefa.prioridade === 'ALTA' ? 'prioridade-alta' : ''}`}
@@ -502,6 +704,15 @@ export function TelaDashboard() {
                 Sem tarefas de prioridade alta ou media para esta disciplina.
               </p>
             )}
+          </div>
+
+          <div className="paginacao-area">
+            <PaginacaoNumerada
+              paginaAtual={paginaAtualTarefas}
+              totalPaginas={totalPaginasTarefas}
+              onChange={setPaginaAtualTarefas}
+              ariaLabel="Paginacao de tarefas prioritarias"
+            />
           </div>
         </aside>
       </section>
