@@ -156,6 +156,58 @@
   gap: 10px;
 }
 
+.paginacao-area {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.paginacao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.paginacao-botao {
+  min-width: 36px;
+  height: 36px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 9px;
+  background: var(--cor-card);
+  color: var(--cor-texto);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.paginacao-botao:hover:not(:disabled) {
+  background: var(--cor-card-hover);
+  border-color: var(--cor-primaria);
+  color: var(--cor-primaria);
+}
+
+.paginacao-botao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginacao-botao-ativo,
+.paginacao-botao-ativo:hover {
+  background: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  color: var(--cor-branco);
+}
+
+.paginacao-reticencias {
+  color: var(--cor-texto-suave);
+  font-weight: 700;
+  min-width: 24px;
+  text-align: center;
+}
+
 .card-tarefa {
   background: var(--cor-card);
   border: 1px solid var(--cor-borda);
@@ -412,5 +464,17 @@
 
   .grade-dupla-modal {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .paginacao {
+    gap: 4px;
+  }
+
+  .paginacao-botao {
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.82rem;
   }
 }

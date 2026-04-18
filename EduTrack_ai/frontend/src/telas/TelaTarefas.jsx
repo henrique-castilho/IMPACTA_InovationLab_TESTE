@@ -2,11 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { Toast } from '../componentes/Toast'
 import './TelaTarefas.css'
 
+const ITENS_POR_PAGINA_TAREFAS = 6
+
 const DISCIPLINAS_MOCK = [
   { id: 1, nome: 'Algoritmos e Programacao' },
   { id: 2, nome: 'Banco de Dados' },
   { id: 3, nome: 'Desenvolvimento Web' },
   { id: 4, nome: 'Engenharia de Software' },
+  { id: 5, nome: 'Inteligencia Artificial' },
+  { id: 6, nome: 'Arquitetura de Computadores' },
+  { id: 7, nome: 'Seguranca da Informacao' },
 ]
 
 const TAREFAS_INICIAIS = [
@@ -33,6 +38,38 @@ const TAREFAS_INICIAIS = [
     dataEntrega: '2026-04-09',
     status: 'CONCLUIDA',
     disciplinaId: 2,
+  },
+  {
+    id: 104,
+    titulo: 'Montar backlog tecnico',
+    descricao: 'Organizar historias e prioridades do sprint',
+    dataEntrega: '2026-04-21',
+    status: 'PENDENTE',
+    disciplinaId: 4,
+  },
+  {
+    id: 105,
+    titulo: 'Treinar modelo de classificacao',
+    descricao: 'Avaliar acuracia com validacao cruzada',
+    dataEntrega: '2026-05-10',
+    status: 'EM_ANDAMENTO',
+    disciplinaId: 5,
+  },
+  {
+    id: 106,
+    titulo: 'Revisao de pipeline de dados',
+    descricao: 'Ajustar preprocessamento e normalizacao',
+    dataEntrega: '2026-04-23',
+    status: 'PENDENTE',
+    disciplinaId: 5,
+  },
+  {
+    id: 107,
+    titulo: 'Exercicios de memoria cache',
+    descricao: 'Resolver lista sobre localidade temporal e espacial',
+    dataEntrega: '2026-04-27',
+    status: 'CONCLUIDA',
+    disciplinaId: 6,
   },
 ]
 
@@ -101,8 +138,93 @@ function montarPayloadBackend(formulario) {
   }
 }
 
+function aplicarPaginacaoTemporaria(lista, paginaAtual, itensPorPagina) {
+  // Temporario: o frontend recorta os itens localmente enquanto nao existe endpoint paginado.
+  // Quando o backend estiver pronto, trocar por: fetch(`/api/tarefas?page=${paginaAtual}&limit=${itensPorPagina}`).
+  const inicio = (paginaAtual - 1) * itensPorPagina
+  return lista.slice(inicio, inicio + itensPorPagina)
+}
+
+function montarPaginasVisiveis(totalPaginas, paginaAtual) {
+  if (totalPaginas <= 7) {
+    return Array.from({ length: totalPaginas }, (_, indice) => indice + 1)
+  }
+
+  if (paginaAtual <= 4) {
+    return [1, 2, 3, 4, 5, '...', totalPaginas]
+  }
+
+  if (paginaAtual >= totalPaginas - 3) {
+    return [1, '...', totalPaginas - 4, totalPaginas - 3, totalPaginas - 2, totalPaginas - 1, totalPaginas]
+  }
+
+  return [1, '...', paginaAtual - 1, paginaAtual, paginaAtual + 1, '...', totalPaginas]
+}
+
+function PaginacaoNumerada({
+  paginaAtual,
+  totalPaginas,
+  onChange,
+  ariaLabel,
+}) {
+  if (totalPaginas <= 1) {
+    return null
+  }
+
+  const paginasVisiveis = montarPaginasVisiveis(totalPaginas, paginaAtual)
+
+  return (
+    <nav className="paginacao" aria-label={ariaLabel}>
+      <button
+        type="button"
+        className="paginacao-botao"
+        onClick={() => onChange(paginaAtual - 1)}
+        disabled={paginaAtual === 1}
+        aria-label="Pagina anterior"
+      >
+        {'<'}
+      </button>
+
+      {paginasVisiveis.map((pagina, indice) => {
+        if (pagina === '...') {
+          return (
+            <span key={`ellipsis-${indice}`} className="paginacao-reticencias" aria-hidden="true">
+              ...
+            </span>
+          )
+        }
+
+        const ativa = paginaAtual === pagina
+        return (
+          <button
+            key={pagina}
+            type="button"
+            className={`paginacao-botao ${ativa ? 'paginacao-botao-ativo' : ''}`}
+            onClick={() => onChange(pagina)}
+            aria-current={ativa ? 'page' : undefined}
+            aria-label={`Ir para pagina ${pagina}`}
+          >
+            {pagina}
+          </button>
+        )
+      })}
+
+      <button
+        type="button"
+        className="paginacao-botao"
+        onClick={() => onChange(paginaAtual + 1)}
+        disabled={paginaAtual === totalPaginas}
+        aria-label="Proxima pagina"
+      >
+        {'>'}
+      </button>
+    </nav>
+  )
+}
+
 export function TelaTarefas() {
   const [tarefas, setTarefas] = useState(TAREFAS_INICIAIS)
+  const [paginaAtualTarefas, setPaginaAtualTarefas] = useState(1)
   const [statusFiltro, setStatusFiltro] = useState('TODOS')
   const [disciplinaFiltro, setDisciplinaFiltro] = useState('TODAS')
   const [modalAberto, setModalAberto] = useState(false)
@@ -154,6 +276,18 @@ export function TelaTarefas() {
       })
   }, [tarefasEnriquecidas, statusFiltro, disciplinaFiltro])
 
+  const totalPaginasTarefas = useMemo(
+    () => Math.max(1, Math.ceil(tarefasFiltradas.length / ITENS_POR_PAGINA_TAREFAS)),
+    [tarefasFiltradas.length],
+  )
+
+  const tarefasPaginadas = useMemo(
+    // Temporario: hoje os itens da pagina sao montados no cliente; no futuro,
+    // a tela deve consumir diretamente a pagina retornada por /api/tarefas?page=X&limit=6.
+    () => aplicarPaginacaoTemporaria(tarefasFiltradas, paginaAtualTarefas, ITENS_POR_PAGINA_TAREFAS),
+    [tarefasFiltradas, paginaAtualTarefas],
+  )
+
   useEffect(() => {
     if (!toast.aberto) {
       return undefined
@@ -165,6 +299,14 @@ export function TelaTarefas() {
 
     return () => window.clearTimeout(identificador)
   }, [toast.aberto])
+
+  useEffect(() => {
+    setPaginaAtualTarefas((paginaAtual) => Math.min(Math.max(paginaAtual, 1), totalPaginasTarefas))
+  }, [totalPaginasTarefas])
+
+  useEffect(() => {
+    setPaginaAtualTarefas(1)
+  }, [statusFiltro, disciplinaFiltro])
 
   function mostrarToast(mensagem) {
     setToast({ aberto: true, mensagem })
@@ -330,7 +472,7 @@ export function TelaTarefas() {
             <h3>Você ainda não tem tarefas. Clique em + para começar</h3>
           </article>
         ) : (
-          tarefasFiltradas.map((tarefa) => (
+          tarefasPaginadas.map((tarefa) => (
             <article key={tarefa.id} className="card-tarefa">
               <div className="conteudo-tarefa">
                 <div className="linha-principal-tarefa">
@@ -380,6 +522,15 @@ export function TelaTarefas() {
           ))
         )}
       </section>
+
+      <div className="paginacao-area">
+        <PaginacaoNumerada
+          paginaAtual={paginaAtualTarefas}
+          totalPaginas={totalPaginasTarefas}
+          onChange={setPaginaAtualTarefas}
+          ariaLabel="Paginacao de tarefas"
+        />
+      </div>
 
       {modalAberto && (
         <div className="fundo-modal" role="presentation" onClick={fecharModal}>
