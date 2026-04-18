@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Toast } from '../componentes/Toast'
 import './TelaDisciplinas.css'
 
+const ITENS_POR_PAGINA_DISCIPLINAS = 6
+
 const DISCIPLINAS_INICIAIS = [
   {
     id: 1,
@@ -38,8 +40,127 @@ const DISCIPLINAS_INICIAIS = [
     descricao: 'Metodos ageis, requisitos e qualidade de software em equipes.',
     dataInicio: '2026-02-01',
     dataFim: '2026-07-05',
+    tarefasConcluidas: 7,
+    tarefasTotais: 15,
+  },
+  {
+    id: 5,
+    nome: 'Inteligencia Artificial',
+    professor: 'Prof. Roberto Almeida',
+    cargaHoraria: 36,
+    descricao: 'Introducao a modelos de IA, classificacao e regressao.',
+    dataInicio: '2026-02-12',
+    dataFim: '2026-07-01',
+    tarefasConcluidas: 4,
+    tarefasTotais: 9,
+  },
+  {
+    id: 6,
+    nome: 'Arquitetura de Computadores',
+    professor: 'Profa. Daniela Rocha',
+    cargaHoraria: 32,
+    descricao: 'Organizacao de hardware, processadores e memoria.',
+    dataInicio: '2026-02-08',
+    dataFim: '2026-06-29',
+    tarefasConcluidas: 6,
+    tarefasTotais: 11,
+  },
+  {
+    id: 7,
+    nome: 'Seguranca da Informacao',
+    professor: 'Prof. Marcos Ferreira',
+    cargaHoraria: 28,
+    descricao: 'Principios de seguranca, ameacas e boas praticas.',
+    dataInicio: '2026-02-14',
+    dataFim: '2026-06-27',
+    tarefasConcluidas: 3,
+    tarefasTotais: 8,
   },
 ]
+
+function aplicarPaginacaoTemporaria(lista, paginaAtual, itensPorPagina) {
+  // Temporario: este recorte local simula a resposta paginada do backend.
+  // Quando a API estiver pronta, substituir por: fetch(`/api/disciplinas?page=${paginaAtual}&limit=${itensPorPagina}`).
+  const inicio = (paginaAtual - 1) * itensPorPagina
+  return lista.slice(inicio, inicio + itensPorPagina)
+}
+
+function montarPaginasVisiveis(totalPaginas, paginaAtual) {
+  if (totalPaginas <= 7) {
+    return Array.from({ length: totalPaginas }, (_, indice) => indice + 1)
+  }
+
+  if (paginaAtual <= 4) {
+    return [1, 2, 3, 4, 5, '...', totalPaginas]
+  }
+
+  if (paginaAtual >= totalPaginas - 3) {
+    return [1, '...', totalPaginas - 4, totalPaginas - 3, totalPaginas - 2, totalPaginas - 1, totalPaginas]
+  }
+
+  return [1, '...', paginaAtual - 1, paginaAtual, paginaAtual + 1, '...', totalPaginas]
+}
+
+function PaginacaoNumerada({
+  paginaAtual,
+  totalPaginas,
+  onChange,
+  ariaLabel,
+}) {
+  if (totalPaginas <= 1) {
+    return null
+  }
+
+  const paginasVisiveis = montarPaginasVisiveis(totalPaginas, paginaAtual)
+
+  return (
+    <nav className="paginacao" aria-label={ariaLabel}>
+      <button
+        type="button"
+        className="paginacao-botao"
+        onClick={() => onChange(paginaAtual - 1)}
+        disabled={paginaAtual === 1}
+        aria-label="Pagina anterior"
+      >
+        {'<'}
+      </button>
+
+      {paginasVisiveis.map((pagina, indice) => {
+        if (pagina === '...') {
+          return (
+            <span key={`ellipsis-${indice}`} className="paginacao-reticencias" aria-hidden="true">
+              ...
+            </span>
+          )
+        }
+
+        const ativa = paginaAtual === pagina
+        return (
+          <button
+            key={pagina}
+            type="button"
+            className={`paginacao-botao ${ativa ? 'paginacao-botao-ativo' : ''}`}
+            onClick={() => onChange(pagina)}
+            aria-current={ativa ? 'page' : undefined}
+            aria-label={`Ir para pagina ${pagina}`}
+          >
+            {pagina}
+          </button>
+        )
+      })}
+
+      <button
+        type="button"
+        className="paginacao-botao"
+        onClick={() => onChange(paginaAtual + 1)}
+        disabled={paginaAtual === totalPaginas}
+        aria-label="Proxima pagina"
+      >
+        {'>'}
+      </button>
+    </nav>
+  )
+}
 
 function montarPayloadBackend(formulario) {
   return {
@@ -63,6 +184,7 @@ function formatarData(dataIso) {
 
 export function TelaDisciplinas() {
   const [disciplinas, setDisciplinas] = useState(DISCIPLINAS_INICIAIS)
+  const [paginaAtualDisciplinas, setPaginaAtualDisciplinas] = useState(1)
   const [termoPesquisa, setTermoPesquisa] = useState('')
   const [modalAberto, setModalAberto] = useState(false)
   const [disciplinaEmEdicaoId, setDisciplinaEmEdicaoId] = useState(null)
@@ -95,6 +217,23 @@ export function TelaDisciplinas() {
     })
   }, [disciplinas, termoPesquisa])
 
+  const totalPaginasDisciplinas = useMemo(
+    () => Math.max(1, Math.ceil(disciplinasFiltradas.length / ITENS_POR_PAGINA_DISCIPLINAS)),
+    [disciplinasFiltradas.length],
+  )
+
+  const disciplinasPaginadas = useMemo(
+    // Temporario: hoje paginamos no frontend com slice; no backend, a tela deve consumir
+    // os dados ja paginados recebidos de /api/disciplinas?page=X&limit=6.
+    () =>
+      aplicarPaginacaoTemporaria(
+        disciplinasFiltradas,
+        paginaAtualDisciplinas,
+        ITENS_POR_PAGINA_DISCIPLINAS,
+      ),
+    [disciplinasFiltradas, paginaAtualDisciplinas],
+  )
+
   useEffect(() => {
     if (!toast.aberto) {
       return undefined
@@ -106,6 +245,14 @@ export function TelaDisciplinas() {
 
     return () => window.clearTimeout(identificador)
   }, [toast.aberto])
+
+  useEffect(() => {
+    setPaginaAtualDisciplinas((paginaAtual) => Math.min(Math.max(paginaAtual, 1), totalPaginasDisciplinas))
+  }, [totalPaginasDisciplinas])
+
+  useEffect(() => {
+    setPaginaAtualDisciplinas(1)
+  }, [termoPesquisa])
 
   function mostrarToast(mensagem) {
     setToast({ aberto: true, mensagem })
@@ -262,7 +409,7 @@ export function TelaDisciplinas() {
             </h3>
           </article>
         ) : (
-          disciplinasFiltradas.map((disciplina) => (
+          disciplinasPaginadas.map((disciplina) => (
             <article key={disciplina.id} className="card-disciplina-gestao">
               <header>
                 <div>
@@ -303,6 +450,15 @@ export function TelaDisciplinas() {
           ))
         )}
       </section>
+
+      <div className="paginacao-area">
+        <PaginacaoNumerada
+          paginaAtual={paginaAtualDisciplinas}
+          totalPaginas={totalPaginasDisciplinas}
+          onChange={setPaginaAtualDisciplinas}
+          ariaLabel="Paginacao de disciplinas"
+        />
+      </div>
 
       {modalAberto && (
         <div className="fundo-modal-disciplina" role="presentation" onClick={fecharModal}>
