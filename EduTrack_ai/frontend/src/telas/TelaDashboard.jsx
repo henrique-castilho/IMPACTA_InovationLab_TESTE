@@ -211,6 +211,8 @@ function formatarPrazo(dataEntrega) {
 }
 
 function aplicarPaginacaoTemporaria(lista, paginaAtual, itensPorPagina) {
+  // Temporario: enquanto o backend paginado nao esta pronto, o recorte e feito no frontend.
+  // Quando a API estiver disponivel, este slice sera substituido pela resposta da pagina solicitada.
   const inicio = (paginaAtual - 1) * itensPorPagina
   return lista.slice(inicio, inicio + itensPorPagina)
 }
@@ -386,6 +388,8 @@ export function TelaDashboard() {
   )
 
   const disciplinasPaginadas = useMemo(
+    // Temporario: simula pagina 1, 2, 3... localmente; depois vira uma chamada como
+    // fetch(`/api/disciplinas?page=${paginaAtualDisciplinas}&limit=${ITENS_POR_PAGINA_DISCIPLINAS}`).
     () => aplicarPaginacaoTemporaria(disciplinas, paginaAtualDisciplinas, ITENS_POR_PAGINA_DISCIPLINAS),
     [disciplinas, paginaAtualDisciplinas],
   )
@@ -413,10 +417,9 @@ export function TelaDashboard() {
   }, [disciplinaSelecionadaId])
 
   useEffect(() => {
-    if (paginaAtualDisciplinas > totalPaginasDisciplinas) {
-      setPaginaAtualDisciplinas(totalPaginasDisciplinas)
-    }
-  }, [paginaAtualDisciplinas, totalPaginasDisciplinas])
+    // Garante pagina valida quando a lista muda (ex.: filtro futuro ou alteracoes nos dados).
+    setPaginaAtualDisciplinas((paginaAtual) => Math.min(Math.max(paginaAtual, 1), totalPaginasDisciplinas))
+  }, [totalPaginasDisciplinas])
 
   useEffect(() => {
     if (paginaAtualTarefas > totalPaginasTarefas) {
