@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Toast } from '../componentes/Toast'
 import './TelaTarefas.css'
 
 const DISCIPLINAS_MOCK = [
@@ -106,6 +107,7 @@ export function TelaTarefas() {
   const [disciplinaFiltro, setDisciplinaFiltro] = useState('TODAS')
   const [modalAberto, setModalAberto] = useState(false)
   const [tarefaEmEdicaoId, setTarefaEmEdicaoId] = useState(null)
+  const [toast, setToast] = useState({ aberto: false, mensagem: '' })
   const [formulario, setFormulario] = useState({
     titulo: '',
     descricao: '',
@@ -151,6 +153,22 @@ export function TelaTarefas() {
         return new Date(a.dataEntrega).getTime() - new Date(b.dataEntrega).getTime()
       })
   }, [tarefasEnriquecidas, statusFiltro, disciplinaFiltro])
+
+  useEffect(() => {
+    if (!toast.aberto) {
+      return undefined
+    }
+
+    const identificador = window.setTimeout(() => {
+      setToast({ aberto: false, mensagem: '' })
+    }, 3000)
+
+    return () => window.clearTimeout(identificador)
+  }, [toast.aberto])
+
+  function mostrarToast(mensagem) {
+    setToast({ aberto: true, mensagem })
+  }
 
   function abrirModalNovaTarefa() {
     setTarefaEmEdicaoId(null)
@@ -229,6 +247,7 @@ export function TelaTarefas() {
 
   function handleExcluirTarefa(id) {
     setTarefas((atual) => atual.filter((item) => item.id !== id))
+    mostrarToast('Tarefa excluida com sucesso.')
   }
 
   return (
@@ -304,9 +323,11 @@ export function TelaTarefas() {
 
       <section className="lista-tarefas" aria-label="Lista detalhada de tarefas">
         {tarefasFiltradas.length === 0 ? (
-          <article className="vazio-tarefas">
-            <h3>Nenhuma tarefa encontrada</h3>
-            <p>Altere os filtros ou crie uma nova tarefa.</p>
+          <article className="vazio-tarefas" role="status" aria-live="polite">
+            <span className="vazio-icone" aria-hidden="true">
+              ✅
+            </span>
+            <h3>Você ainda não tem tarefas. Clique em + para começar</h3>
           </article>
         ) : (
           tarefasFiltradas.map((tarefa) => (
@@ -456,6 +477,8 @@ export function TelaTarefas() {
           </section>
         </div>
       )}
+
+      <Toast aberto={toast.aberto} mensagem={toast.mensagem} />
     </main>
   )
 }
