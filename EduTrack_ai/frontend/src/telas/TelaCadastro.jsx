@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
+import { ToggleTema } from '../componentes/ToggleTema'
 import './TelaCadastro.css'
 
 export function TelaCadastro() {
@@ -15,6 +16,10 @@ export function TelaCadastro() {
   return (
     <main className="pagina-autenticacao">
       <section className="caixa-autenticacao">
+        <div className="topo-tema-autenticacao">
+          <ToggleTema />
+        </div>
+
         <header className="cabecalho-autenticacao">
           <div className="logo-edutrack" aria-hidden="true">
             <span>🎓</span>

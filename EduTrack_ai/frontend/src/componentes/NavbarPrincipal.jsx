@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
+import { ToggleTema } from './ToggleTema'
 import './NavbarPrincipal.css'
 
 export function NavbarPrincipal({ nomeUsuario }) {
@@ -30,9 +31,12 @@ export function NavbarPrincipal({ nomeUsuario }) {
         </NavLink>
       </nav>
 
-      <button type="button" className="botao-sair" onClick={handleSair}>
-        Sair
-      </button>
+      <div className="acoes-navbar">
+        <ToggleTema className="toggle-navbar" />
+        <button type="button" className="botao-sair" onClick={handleSair}>
+          Sair
+        </button>
+      </div>
     </header>
   )
 }

@@ -1,0 +1,36 @@
+.toggle-tema {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--cor-toggle-borda);
+  background: var(--cor-toggle-fundo);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.botao-tema {
+  border: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  font-size: 1rem;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.botao-tema:hover {
+  transform: translateY(-1px);
+}
+
+.botao-tema.ativo {
+  background: var(--cor-toggle-ativo);
+  box-shadow: 0 0 14px rgba(138, 126, 255, 0.35);
+}
+
+body.dark-mode .botao-tema.ativo {
+  box-shadow: 0 0 14px rgba(170, 159, 255, 0.5);
+}

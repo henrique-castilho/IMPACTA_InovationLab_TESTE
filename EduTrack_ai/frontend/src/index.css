@@ -1,14 +1,31 @@
 :root {
   --cor-primaria: #4f3de3;
   --cor-primaria-escura: #3f2fc8;
+  --cor-primaria-clara: #8a7eff;
   --cor-texto: #111827;
   --cor-texto-suave: #6b7280;
+  --cor-texto-invertido: #ffffff;
   --cor-borda: #d8def0;
+  --cor-borda-forte: #c7d2fe;
   --cor-fundo: #e8edf8;
+  --cor-fundo-secundario: #edf2ff;
+  --cor-fundo-elevado: #f3f7ff;
   --cor-card: #f8fafc;
+  --cor-card-hover: #fdfdff;
   --cor-branco: #ffffff;
   --cor-sucesso: #0ea74a;
+  --cor-perigo: #dc2626;
+  --cor-overlay: rgba(13, 23, 45, 0.48);
+  --cor-input-fundo: #ffffff;
+  --cor-toggle-fundo: #eef2ff;
+  --cor-toggle-borda: #d7e2fd;
+  --cor-toggle-ativo: #ffffff;
+  --cor-gradiente-inicio: #eef2ff;
+  --cor-gradiente-meio: #e8edf8;
+  --cor-gradiente-fim: #dfe7f7;
   --sombra-card: 0 16px 36px rgba(46, 58, 99, 0.14);
+  --sombra-card-suave: 0 8px 20px rgba(50, 77, 146, 0.08);
+  --sombra-destaque: 0 0 0 3px rgba(79, 70, 229, 0.18);
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   color: var(--cor-texto);
   font-synthesis: none;
@@ -17,13 +34,45 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+body.dark-mode {
+  --cor-primaria: #8b7dff;
+  --cor-primaria-escura: #6f62f2;
+  --cor-primaria-clara: #aa9fff;
+  --cor-texto: #e6ecff;
+  --cor-texto-suave: #9aa8c7;
+  --cor-texto-invertido: #0f172a;
+  --cor-borda: #2f3b58;
+  --cor-borda-forte: #3c4c73;
+  --cor-fundo: #0b1220;
+  --cor-fundo-secundario: #121c30;
+  --cor-fundo-elevado: #18253a;
+  --cor-card: #1a2438;
+  --cor-card-hover: #222f48;
+  --cor-branco: #f4f7ff;
+  --cor-sucesso: #22c55e;
+  --cor-perigo: #f87171;
+  --cor-overlay: rgba(2, 6, 23, 0.7);
+  --cor-input-fundo: #111a2b;
+  --cor-toggle-fundo: #0f172a;
+  --cor-toggle-borda: #324261;
+  --cor-toggle-ativo: #273652;
+  --cor-gradiente-inicio: #151f33;
+  --cor-gradiente-meio: #0b1220;
+  --cor-gradiente-fim: #070d19;
+  --sombra-card: 0 18px 36px rgba(2, 6, 23, 0.45);
+  --sombra-card-suave: 0 10px 24px rgba(2, 6, 23, 0.35);
+  --sombra-destaque: 0 0 0 3px rgba(139, 125, 255, 0.25);
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top right, #eef2ff 5%, var(--cor-fundo) 55%, #dfe7f7 100%);
+  color: var(--cor-texto);
+  background: radial-gradient(circle at top right, var(--cor-gradiente-inicio) 5%, var(--cor-gradiente-meio) 55%, var(--cor-gradiente-fim) 100%);
+  transition: background 0.25s ease, color 0.2s ease;
 }
 
 a {
@@ -38,4 +87,17 @@ a:hover {
 button,
 input {
   font: inherit;
+}
+
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+body.dark-mode input[type='date']::-webkit-calendar-picker-indicator,
+body.dark-mode input[type='datetime-local']::-webkit-calendar-picker-indicator,
+body.dark-mode input[type='month']::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.9);
+  opacity: 1;
 }

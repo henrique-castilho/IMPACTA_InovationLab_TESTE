@@ -9,21 +9,21 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  background: #edf2ff;
-  border: 1px solid #d7e2fd;
+  background: var(--cor-fundo-secundario);
+  border: 1px solid var(--cor-borda);
   border-radius: 14px;
   padding: 14px;
 }
 
 .cabecalho-tarefas h1 {
   margin: 0;
-  color: #172033;
+  color: var(--cor-texto);
   font-size: 1.25rem;
 }
 
 .cabecalho-tarefas p {
   margin: 5px 0 0;
-  color: #64748b;
+  color: var(--cor-texto-suave);
   font-size: 0.85rem;
 }
 
@@ -31,8 +31,8 @@
   border: 0;
   border-radius: 10px;
   padding: 8px 12px;
-  background: #4f46e5;
-  color: #ffffff;
+  background: var(--cor-primaria);
+  color: var(--cor-branco);
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
@@ -40,21 +40,21 @@
 }
 
 .botao-nova-tarefa:hover {
-  background: #4338ca;
+  background: var(--cor-primaria-escura);
 }
 
 .painel-filtros {
-  background: #ffffff;
-  border: 1px solid #dbe6fb;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(50, 77, 146, 0.08);
+  box-shadow: var(--sombra-card-suave);
   padding: 12px;
 }
 
 .painel-filtros h2 {
   margin: 0 0 10px;
   font-size: 0.86rem;
-  color: #475569;
+  color: var(--cor-texto-suave);
 }
 
 .linha-filtros {
@@ -68,7 +68,7 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  color: #334155;
+  color: var(--cor-texto);
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -77,20 +77,21 @@
 .formulario-tarefa select,
 .formulario-tarefa input,
 .formulario-tarefa textarea {
-  border: 1px solid #d3deef;
+  border: 1px solid var(--cor-borda);
   border-radius: 9px;
   padding: 10px;
   font: inherit;
-  color: #0f172a;
-  background: #ffffff;
+  color: var(--cor-texto);
+  background: var(--cor-input-fundo);
 }
 
 .linha-filtros select:focus,
 .formulario-tarefa select:focus,
 .formulario-tarefa input:focus,
 .formulario-tarefa textarea:focus {
-  border-color: #8178ff;
-  outline: 3px solid rgba(79, 70, 229, 0.18);
+  border-color: var(--cor-primaria);
+  outline: none;
+  box-shadow: var(--sombra-destaque);
 }
 
 .cards-status {
@@ -100,10 +101,10 @@
 }
 
 .card-status {
-  background: #ffffff;
-  border: 1px solid #dbe6fb;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(50, 77, 146, 0.08);
+  box-shadow: var(--sombra-card-suave);
   padding: 12px;
 }
 
@@ -115,7 +116,7 @@
 }
 
 .card-status span {
-  color: #475569;
+  color: var(--cor-texto-suave);
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -131,7 +132,7 @@
 }
 
 .card-status strong {
-  color: #0f172a;
+  color: var(--cor-texto);
   font-size: 1.45rem;
 }
 
@@ -156,10 +157,10 @@
 }
 
 .card-tarefa {
-  background: #ffffff;
-  border: 1px solid #dbe6fb;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(50, 77, 146, 0.08);
+  box-shadow: var(--sombra-card-suave);
   padding: 12px;
   display: grid;
   grid-template-columns: 1fr auto;
@@ -168,7 +169,7 @@
 
 .conteudo-tarefa h3 {
   margin: 0;
-  color: #0f172a;
+  color: var(--cor-texto);
   font-size: 0.92rem;
 }
 
@@ -191,8 +192,8 @@
 }
 
 .tag-disciplina {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--cor-fundo-elevado);
+  color: var(--cor-texto-suave);
 }
 
 .tag-status-pendente {
@@ -227,7 +228,7 @@
 
 .conteudo-tarefa p {
   margin: 8px 0 0;
-  color: #64748b;
+  color: var(--cor-texto-suave);
   font-size: 0.8rem;
 }
 
@@ -236,14 +237,14 @@
 }
 
 .conteudo-tarefa small {
-  color: #64748b;
+  color: var(--cor-texto-suave);
   font-size: 0.74rem;
 }
 
 .texto-concluido {
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
-  color: #7a879b;
+  color: var(--cor-texto-suave);
 }
 
 .acoes-tarefa {
@@ -264,13 +265,13 @@
 }
 
 .botao-acao.editar {
-  background: #eef2ff;
-  color: #4f46e5;
+  background: var(--cor-fundo-elevado);
+  color: var(--cor-primaria);
 }
 
 .botao-acao.excluir {
-  background: #fff1f2;
-  color: #e11d48;
+  background: color-mix(in srgb, var(--cor-perigo) 12%, transparent);
+  color: var(--cor-perigo);
 }
 
 .botao-acao:hover {
@@ -278,9 +279,9 @@
 }
 
 .vazio-tarefas {
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--cor-borda);
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--cor-card);
   padding: 24px 18px;
   min-height: 200px;
   display: flex;
@@ -297,20 +298,20 @@
   border-radius: 999px;
   display: inline-grid;
   place-items: center;
-  background: #eef2ff;
+  background: var(--cor-fundo-elevado);
   font-size: 1.45rem;
 }
 
 .vazio-tarefas h3 {
   margin: 0;
   font-size: 0.95rem;
-  color: #334155;
+  color: var(--cor-texto);
 }
 
 .fundo-modal {
   position: fixed;
   inset: 0;
-  background: rgba(4, 10, 25, 0.7);
+  background: var(--cor-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -320,9 +321,9 @@
 
 .modal-tarefa {
   width: min(540px, 100%);
-  background: #ffffff;
+  background: var(--cor-card);
   border-radius: 12px;
-  border: 1px solid #dbe6fb;
+  border: 1px solid var(--cor-borda);
   box-shadow: 0 20px 40px rgba(2, 6, 23, 0.35);
   overflow: hidden;
 }
@@ -332,13 +333,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 14px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--cor-borda);
 }
 
 .topo-modal h2 {
   margin: 0;
   font-size: 1rem;
-  color: #0f172a;
+  color: var(--cor-texto);
 }
 
 .botao-fechar-modal {
@@ -347,7 +348,7 @@
   border: 0;
   border-radius: 7px;
   background: transparent;
-  color: #334155;
+  color: var(--cor-texto);
   font-size: 1.2rem;
   cursor: pointer;
 }
@@ -387,17 +388,17 @@
 }
 
 .botao-secundario {
-  background: #f1f5f9;
-  color: #334155;
+  background: var(--cor-fundo-elevado);
+  color: var(--cor-texto);
 }
 
 .botao-primario-modal {
-  background: #4f46e5;
-  color: #ffffff;
+  background: var(--cor-primaria);
+  color: var(--cor-branco);
 }
 
 .botao-primario-modal:hover {
-  background: #4338ca;
+  background: var(--cor-primaria-escura);
 }
 
 @media (min-width: 768px) {

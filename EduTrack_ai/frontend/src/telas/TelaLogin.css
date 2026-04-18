@@ -7,11 +7,17 @@
 
 .caixa-autenticacao {
   width: min(430px, 100%);
-  background: rgba(239, 244, 255, 0.78);
-  border: 1px solid #d6def6;
+  background: color-mix(in srgb, var(--cor-fundo-elevado) 82%, transparent);
+  border: 1px solid var(--cor-borda);
   border-radius: 18px;
   padding: 16px;
   box-shadow: var(--sombra-card);
+}
+
+.topo-tema-autenticacao {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
 .cabecalho-autenticacao {
@@ -44,7 +50,7 @@
 
 .cartao-autenticacao {
   background: var(--cor-card);
-  border: 1px solid #e3e8f6;
+  border: 1px solid var(--cor-borda);
   border-radius: 14px;
   padding: 16px;
 }
@@ -75,6 +81,8 @@
   border-radius: 9px;
   padding: 9px 11px;
   outline: none;
+  background: var(--cor-input-fundo);
+  color: var(--cor-texto);
 }
 
 .campo-senha {
@@ -95,9 +103,14 @@
   transform: translateY(-50%);
   border: 0;
   background: transparent;
+  color: var(--cor-texto-suave);
   cursor: pointer;
   font-size: 1rem;
   line-height: 1;
+}
+
+body.dark-mode .botao-olho {
+  color: var(--cor-branco);
 }
 
 .cartao-autenticacao input:focus {
@@ -149,17 +162,18 @@
 }
 
 .botao-social {
-  border: 1px solid #d8def0;
-  background: var(--cor-branco);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-input-fundo);
   border-radius: 9px;
   padding: 8px;
   font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
+  color: var(--cor-texto);
 }
 
 .botao-social:hover {
-  background: #eef2ff;
+  background: var(--cor-fundo-elevado);
 }
 
 .rodape-autenticacao {

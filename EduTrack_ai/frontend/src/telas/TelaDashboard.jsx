@@ -374,9 +374,19 @@ export function TelaDashboard() {
           <div className="area-grafico">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dadosBarras} barGap={-22}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="nome" tick={{ fontSize: 11 }} />
-                <YAxis allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--cor-borda)" />
+                <XAxis
+                  dataKey="nome"
+                  tick={{ fontSize: 11, fill: 'var(--cor-texto-suave)' }}
+                  axisLine={{ stroke: 'var(--cor-borda)' }}
+                  tickLine={{ stroke: 'var(--cor-borda)' }}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: 'var(--cor-texto-suave)' }}
+                  axisLine={{ stroke: 'var(--cor-borda)' }}
+                  tickLine={{ stroke: 'var(--cor-borda)' }}
+                />
                 <Tooltip />
                 <Bar dataKey="total" fill="#d5dde8" name="Total" barSize={28} radius={[6, 6, 0, 0]} />
                 <Bar dataKey="concluidas" fill="#10b981" name="Concluidas" barSize={16} radius={[6, 6, 0, 0]} />

@@ -1,8 +1,8 @@
 .navbar-principal {
-  background: #ffffff;
-  border: 1px solid #dce6fb;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
   border-radius: 18px;
-  box-shadow: 0 10px 24px rgba(36, 62, 122, 0.08);
+  box-shadow: var(--sombra-card-suave);
   padding: 12px 16px;
   display: grid;
   grid-template-columns: 1fr;
@@ -24,18 +24,18 @@
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #ffffff;
+  color: var(--cor-branco);
   background: linear-gradient(135deg, #6c5bff 0%, #3f2fc8 100%);
 }
 
 .navbar-logo-area strong {
   display: block;
-  color: #151f35;
+  color: var(--cor-texto);
   font-size: 0.95rem;
 }
 
 .navbar-logo-area small {
-  color: #64748b;
+  color: var(--cor-texto-suave);
   font-size: 0.8rem;
 }
 
@@ -54,7 +54,7 @@
   padding: 6px 10px;
   border-radius: 9px;
   border: 1px solid transparent;
-  color: #475569;
+  color: var(--cor-texto-suave);
   font-size: 0.84rem;
   font-weight: 600;
   white-space: nowrap;
@@ -62,20 +62,30 @@
 
 .navbar-links a:hover {
   text-decoration: none;
-  border-color: #d4ddf8;
-  background: #f6f8fe;
+  border-color: var(--cor-borda);
+  background: var(--cor-fundo-elevado);
 }
 
 .navbar-links .ativo {
-  color: #3b2fe0;
-  background: #ecebff;
+  color: var(--cor-primaria);
+  background: color-mix(in srgb, var(--cor-primaria) 14%, transparent);
+}
+
+.acoes-navbar {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-navbar {
+  height: 36px;
 }
 
 .botao-sair {
-  justify-self: start;
-  border: 1px solid #fecaca;
-  background: #fff5f5;
-  color: #dc2626;
+  border: 1px solid color-mix(in srgb, var(--cor-perigo) 40%, var(--cor-borda));
+  background: color-mix(in srgb, var(--cor-perigo) 12%, transparent);
+  color: var(--cor-perigo);
   border-radius: 10px;
   padding: 8px 14px;
   font-size: 0.86rem;
@@ -84,7 +94,7 @@
 }
 
 .botao-sair:hover {
-  background: #ffe8e8;
+  background: color-mix(in srgb, var(--cor-perigo) 18%, transparent);
 }
 
 @media (min-width: 960px) {
@@ -97,7 +107,7 @@
     justify-self: center;
   }
 
-  .botao-sair {
+  .acoes-navbar {
     justify-self: end;
   }
 }
