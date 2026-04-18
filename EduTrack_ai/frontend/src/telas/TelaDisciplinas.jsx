@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Toast } from '../componentes/Toast'
 import './TelaDisciplinas.css'
 
 const DISCIPLINAS_INICIAIS = [
@@ -64,6 +65,7 @@ export function TelaDisciplinas() {
   const [disciplinas, setDisciplinas] = useState(DISCIPLINAS_INICIAIS)
   const [modalAberto, setModalAberto] = useState(false)
   const [disciplinaEmEdicaoId, setDisciplinaEmEdicaoId] = useState(null)
+  const [toast, setToast] = useState({ aberto: false, mensagem: '' })
   const [formulario, setFormulario] = useState({
     nome: '',
     professor: '',
@@ -77,6 +79,22 @@ export function TelaDisciplinas() {
     () => disciplinas.reduce((acumulador, item) => acumulador + item.cargaHoraria, 0),
     [disciplinas],
   )
+
+  useEffect(() => {
+    if (!toast.aberto) {
+      return undefined
+    }
+
+    const identificador = window.setTimeout(() => {
+      setToast({ aberto: false, mensagem: '' })
+    }, 3000)
+
+    return () => window.clearTimeout(identificador)
+  }, [toast.aberto])
+
+  function mostrarToast(mensagem) {
+    setToast({ aberto: true, mensagem })
+  }
 
   function abrirModalNovaDisciplina() {
     setDisciplinaEmEdicaoId(null)
@@ -166,12 +184,8 @@ export function TelaDisciplinas() {
   }
 
   function handleExcluirDisciplina(id, nome) {
-    const confirmou = window.confirm(`Deseja realmente excluir a disciplina \"${nome}\"?`)
-    if (!confirmou) {
-      return
-    }
-
     setDisciplinas((atual) => atual.filter((item) => item.id !== id))
+    mostrarToast(`Disciplina "${nome}" excluida com sucesso.`)
   }
 
   return (
@@ -200,9 +214,11 @@ export function TelaDisciplinas() {
 
       <section className="grade-disciplinas" aria-label="Lista de disciplinas em cards">
         {disciplinas.length === 0 ? (
-          <article className="vazio-disciplinas">
-            <h3>Nenhuma disciplina cadastrada</h3>
-            <p>Clique em + Nova Disciplina para criar a primeira.</p>
+          <article className="vazio-disciplinas" role="status" aria-live="polite">
+            <span className="vazio-icone" aria-hidden="true">
+              📚
+            </span>
+            <h3>Você ainda não tem disciplinas. Clique em + para começar</h3>
           </article>
         ) : (
           disciplinas.map((disciplina) => (
@@ -360,6 +376,8 @@ export function TelaDisciplinas() {
           </section>
         </div>
       )}
+
+      <Toast aberto={toast.aberto} mensagem={toast.mensagem} />
     </main>
   )
 }
