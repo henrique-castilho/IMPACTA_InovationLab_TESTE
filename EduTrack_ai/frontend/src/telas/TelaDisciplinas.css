@@ -43,6 +43,49 @@
   background: var(--cor-primaria-escura);
 }
 
+.pesquisa-disciplinas {
+  display: grid;
+  gap: 6px;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  box-shadow: var(--sombra-card-suave);
+  padding: 12px;
+}
+
+.pesquisa-disciplinas label {
+  display: grid;
+  gap: 6px;
+  color: var(--cor-texto);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.pesquisa-disciplinas input {
+  width: 100%;
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--cor-fundo-elevado);
+  color: var(--cor-texto);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.pesquisa-disciplinas input::placeholder {
+  color: var(--cor-texto-suave);
+}
+
+.pesquisa-disciplinas input:focus {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cor-primaria) 15%, transparent);
+}
+
+.pesquisa-disciplinas small {
+  color: var(--cor-texto-suave);
+  font-size: 0.76rem;
+}
+
 .resumo-disciplinas {
   display: grid;
   grid-template-columns: 1fr;

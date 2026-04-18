@@ -63,6 +63,7 @@ function formatarData(dataIso) {
 
 export function TelaDisciplinas() {
   const [disciplinas, setDisciplinas] = useState(DISCIPLINAS_INICIAIS)
+  const [termoPesquisa, setTermoPesquisa] = useState('')
   const [modalAberto, setModalAberto] = useState(false)
   const [disciplinaEmEdicaoId, setDisciplinaEmEdicaoId] = useState(null)
   const [toast, setToast] = useState({ aberto: false, mensagem: '' })
@@ -79,6 +80,20 @@ export function TelaDisciplinas() {
     () => disciplinas.reduce((acumulador, item) => acumulador + item.cargaHoraria, 0),
     [disciplinas],
   )
+
+  const disciplinasFiltradas = useMemo(() => {
+    const termoNormalizado = termoPesquisa.trim().toLowerCase()
+
+    if (!termoNormalizado) {
+      return disciplinas
+    }
+
+    return disciplinas.filter((disciplina) => {
+      return [disciplina.nome, disciplina.professor, disciplina.descricao]
+        .filter(Boolean)
+        .some((campo) => campo.toLowerCase().includes(termoNormalizado))
+    })
+  }, [disciplinas, termoPesquisa])
 
   useEffect(() => {
     if (!toast.aberto) {
@@ -107,6 +122,10 @@ export function TelaDisciplinas() {
       dataFim: '',
     })
     setModalAberto(true)
+  }
+
+  function handlePesquisa(event) {
+    setTermoPesquisa(event.target.value)
   }
 
   function abrirModalEdicao(id) {
@@ -201,6 +220,24 @@ export function TelaDisciplinas() {
         </button>
       </section>
 
+      <section className="pesquisa-disciplinas" aria-label="Pesquisa de disciplinas">
+        <label htmlFor="pesquisa-disciplina">
+          Pesquisar disciplina
+          <input
+            id="pesquisa-disciplina"
+            type="search"
+            placeholder="Digite o nome da disciplina, professor ou descrição"
+            value={termoPesquisa}
+            onChange={handlePesquisa}
+          />
+        </label>
+        <small>
+          {termoPesquisa
+            ? `${disciplinasFiltradas.length} resultado(s) para "${termoPesquisa}"`
+            : `${disciplinas.length} disciplina(s) cadastrada(s)`}
+        </small>
+      </section>
+
       <section className="resumo-disciplinas" aria-label="Resumo das disciplinas">
         <article>
           <span>Total de Disciplinas</span>
@@ -213,15 +250,19 @@ export function TelaDisciplinas() {
       </section>
 
       <section className="grade-disciplinas" aria-label="Lista de disciplinas em cards">
-        {disciplinas.length === 0 ? (
+        {disciplinasFiltradas.length === 0 ? (
           <article className="vazio-disciplinas" role="status" aria-live="polite">
             <span className="vazio-icone" aria-hidden="true">
               📚
             </span>
-            <h3>Você ainda não tem disciplinas. Clique em + para começar</h3>
+            <h3>
+              {termoPesquisa
+                ? 'Nenhuma disciplina encontrada para essa pesquisa.'
+                : 'Você ainda não tem disciplinas. Clique em + para começar'}
+            </h3>
           </article>
         ) : (
-          disciplinas.map((disciplina) => (
+          disciplinasFiltradas.map((disciplina) => (
             <article key={disciplina.id} className="card-disciplina-gestao">
               <header>
                 <div>
