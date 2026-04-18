@@ -26,8 +26,14 @@ export function NavbarPrincipal({ nomeUsuario }) {
         <NavLink to="/disciplinas" className={({ isActive }) => (isActive ? 'ativo' : '')}>
           Disciplinas
         </NavLink>
+        <NavLink to="/insights" className={({ isActive }) => (isActive ? 'ativo' : '')}>
+          Insights
+        </NavLink>
         <NavLink to="/tarefas" className={({ isActive }) => (isActive ? 'ativo' : '')}>
           Tarefas
+        </NavLink>
+        <NavLink to="/perfil" className={({ isActive }) => (isActive ? 'ativo' : '')}>
+          Perfil
         </NavLink>
       </nav>
 

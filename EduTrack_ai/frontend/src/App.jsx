@@ -7,7 +7,9 @@ import { TelaCadastro } from './telas/TelaCadastro'
 import { TelaDashboard } from './telas/TelaDashboard'
 import { TelaDisciplinas } from './telas/TelaDisciplinas'
 import { TelaEsqueciSenha } from './telas/TelaEsqueciSenha'
+import { TelaInsights } from './telas/TelaInsights'
 import { TelaLogin } from './telas/TelaLogin'
+import { TelaPerfil } from './telas/TelaPerfil'
 import { TelaTarefas } from './telas/TelaTarefas'
 
 function App() {
@@ -31,6 +33,8 @@ function App() {
       <Route element={<LayoutLogado />}>
         <Route path="/dashboard" element={<TelaDashboard />} />
         <Route path="/disciplinas" element={<TelaDisciplinas />} />
+        <Route path="/insights" element={<TelaInsights />} />
+        <Route path="/perfil" element={<TelaPerfil />} />
         <Route path="/tarefas" element={<TelaTarefas />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />

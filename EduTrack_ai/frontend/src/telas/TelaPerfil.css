@@ -1,0 +1,111 @@
+.perfil-principal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cabecalho-perfil {
+  background: var(--cor-fundo-secundario);
+  border: 1px solid var(--cor-borda);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.cabecalho-perfil h1 {
+  margin: 0;
+  color: var(--cor-texto);
+  font-size: 1.26rem;
+}
+
+.cabecalho-perfil p {
+  margin: 6px 0 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.88rem;
+}
+
+.card-perfil {
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  box-shadow: var(--sombra-card-suave);
+  padding: 14px;
+}
+
+.formulario-perfil {
+  display: grid;
+  gap: 10px;
+}
+
+.formulario-perfil label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--cor-texto);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.formulario-perfil input {
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  padding: 10px;
+  font: inherit;
+  color: var(--cor-texto);
+  background: var(--cor-input-fundo);
+}
+
+.formulario-perfil input:focus {
+  border-color: var(--cor-primaria);
+  box-shadow: var(--sombra-destaque);
+  outline: none;
+}
+
+.formulario-perfil input[readonly] {
+  opacity: 0.9;
+  cursor: default;
+}
+
+.acoes-perfil {
+  margin-top: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.botao-editar-perfil,
+.botao-salvar-perfil,
+.botao-cancelar-perfil,
+.botao-excluir-conta {
+  border: 0;
+  border-radius: 9px;
+  min-height: 38px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.botao-editar-perfil,
+.botao-salvar-perfil {
+  background: var(--cor-primaria);
+  color: var(--cor-branco);
+}
+
+.botao-cancelar-perfil {
+  background: var(--cor-fundo-elevado);
+  color: var(--cor-texto);
+}
+
+.botao-excluir-conta {
+  margin-left: auto;
+  background: color-mix(in srgb, var(--cor-perigo) 14%, transparent);
+  color: var(--cor-perigo);
+  border: 1px solid color-mix(in srgb, var(--cor-perigo) 45%, var(--cor-borda));
+}
+
+@media (max-width: 620px) {
+  .botao-excluir-conta {
+    margin-left: 0;
+    width: 100%;
+  }
+}

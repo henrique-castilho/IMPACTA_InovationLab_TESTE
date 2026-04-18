@@ -1,0 +1,96 @@
+.insights-principal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cabecalho-insights {
+  background: var(--cor-fundo-secundario);
+  border: 1px solid var(--cor-borda);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.cabecalho-insights h1 {
+  margin: 0;
+  color: var(--cor-texto);
+  font-size: 1.26rem;
+}
+
+.cabecalho-insights p {
+  margin: 6px 0 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.88rem;
+}
+
+.grade-metricas-insights {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.card-metrica-insight {
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  box-shadow: var(--sombra-card-suave);
+  padding: 12px;
+}
+
+.card-metrica-insight span {
+  display: block;
+  color: var(--cor-texto-suave);
+  font-size: 0.78rem;
+  margin-bottom: 6px;
+}
+
+.card-metrica-insight strong {
+  color: var(--cor-texto);
+  font-size: 1.48rem;
+}
+
+.lista-insights {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.card-insight {
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  box-shadow: var(--sombra-card-suave);
+  padding: 12px;
+  border-left-width: 4px;
+}
+
+.card-insight h2 {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--cor-texto);
+}
+
+.card-insight p {
+  margin: 8px 0 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.insight-positivo {
+  border-left-color: #22c55e;
+}
+
+.insight-alerta {
+  border-left-color: #f59e0b;
+}
+
+.insight-sugestao {
+  border-left-color: var(--cor-primaria);
+}
+
+@media (min-width: 768px) {
+  .grade-metricas-insights {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
