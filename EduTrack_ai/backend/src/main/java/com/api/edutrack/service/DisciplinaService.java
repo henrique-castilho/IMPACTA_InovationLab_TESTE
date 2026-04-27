@@ -84,4 +84,11 @@ public class DisciplinaService {
             d.getId(), d.getNome(), d.getProfessor(), d.getCargaHoraria(), d.getDescricao(), d.getDataInicio(), d.getDataFim()
         );
     }
+
+    public com.api.edutrack.dto.DisciplinaResumoDTO resumo(Usuario usuario) {
+        long total = disciplinaRepository.countByUsuario(usuario);
+        Integer soma = disciplinaRepository.sumCargaHorariaByUsuario(usuario);
+        int carga = soma == null ? 0 : soma;
+        return new com.api.edutrack.dto.DisciplinaResumoDTO(total, carga);
+    }
 }

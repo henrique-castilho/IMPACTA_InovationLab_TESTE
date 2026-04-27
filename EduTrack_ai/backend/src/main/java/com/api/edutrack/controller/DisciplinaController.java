@@ -34,6 +34,12 @@ public class DisciplinaController {
         return disciplinaService.listar(usuario, search, pageable);
     }
 
+    @GetMapping("/resumo")
+    public com.api.edutrack.dto.DisciplinaResumoDTO resumo() {
+        Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();
+        return disciplinaService.resumo(usuario);
+    }
+
     @GetMapping("/{id}")
     public DisciplinaResponseDTO detalhar(@PathVariable Long id) {
         Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();

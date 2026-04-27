@@ -8,6 +8,8 @@ import com.api.edutrack.entity.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface DisciplinaRepository extends JpaRepository<Disciplina, Long> {
 
@@ -21,4 +23,9 @@ public interface DisciplinaRepository extends JpaRepository<Disciplina, Long> {
     );
 
     Page<Disciplina> findByUsuario(Usuario usuario, Pageable pageable);
+
+    long countByUsuario(Usuario usuario);
+
+    @Query("SELECT COALESCE(SUM(d.cargaHoraria), 0) FROM Disciplina d WHERE d.usuario = :usuario")
+    Integer sumCargaHorariaByUsuario(@Param("usuario") Usuario usuario);
 }
