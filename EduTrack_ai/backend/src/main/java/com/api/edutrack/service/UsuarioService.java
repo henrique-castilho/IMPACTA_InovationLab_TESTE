@@ -8,7 +8,6 @@ import org.springframework.web.server.ResponseStatusException;
 import com.api.edutrack.dto.UsuarioAtualizarRequestDTO;
 import com.api.edutrack.entity.Usuario;
 import com.api.edutrack.repository.UsuarioRepository;
-import com.api.edutrack.repository.DisciplinaRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +17,6 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
-    private final DisciplinaRepository disciplinaRepository;
 
     public Usuario atualizarPerfil(Usuario usuario, UsuarioAtualizarRequestDTO dto) {
         // Verifica unicidade de email
@@ -34,8 +32,6 @@ public class UsuarioService {
     }
 
     public void excluirUsuario(Usuario usuario) {
-        // Exclui todas as disciplinas (em cascata apaga tarefas)
-        disciplinaRepository.deleteByUsuario(usuario);
         usuarioRepository.delete(usuario);
     }
 }
