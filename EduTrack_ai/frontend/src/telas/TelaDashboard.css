@@ -429,6 +429,36 @@ body.dark-mode .item-prioritaria.prioridade-alta {
   background: color-mix(in srgb, var(--cor-perigo) 16%, var(--cor-card));
 }
 
+.item-prioritaria.prioridade-media {
+  border-color: color-mix(in srgb, #f59e0b 36%, var(--cor-borda));
+  border-left-color: #f59e0b;
+  background: color-mix(in srgb, #f59e0b 8%, var(--cor-card));
+}
+
+body.dark-mode .item-prioritaria.prioridade-media {
+  background: color-mix(in srgb, #f59e0b 12%, var(--cor-card));
+}
+
+.item-prioritaria.prioridade-baixa {
+  border-color: color-mix(in srgb, #16a34a 36%, var(--cor-borda));
+  border-left-color: #16a34a;
+  background: color-mix(in srgb, #16a34a 6%, var(--cor-card));
+}
+
+body.dark-mode .item-prioritaria.prioridade-baixa {
+  background: color-mix(in srgb, #16a34a 10%, var(--cor-card));
+}
+
+.item-prioritaria.prioridade-atrasada {
+  border-color: color-mix(in srgb, var(--cor-perigo) 60%, var(--cor-borda));
+  border-left-color: #7f1d1d;
+  background: color-mix(in srgb, #7f1d1d 10%, var(--cor-card));
+}
+
+body.dark-mode .item-prioritaria.prioridade-atrasada {
+  background: color-mix(in srgb, #7f1d1d 18%, var(--cor-card));
+}
+
 .modal-sobreposicao {
   position: fixed;
   inset: 0;

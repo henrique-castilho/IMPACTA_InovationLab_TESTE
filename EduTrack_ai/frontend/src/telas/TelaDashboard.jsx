@@ -17,9 +17,10 @@ const CORES_GRAFICO = ['#4f46e5', '#0ea5a3', '#f59e0b', '#22c55e', '#7c3aed']
 const ITENS_POR_PAGINA_DISCIPLINAS = 6
 const ITENS_POR_PAGINA_TAREFAS = 4
 const ORDEM_PRIORIDADE = {
-  ALTA: 0,
-  MEDIA: 1,
-  BAIXA: 2,
+  ATRASADA: 0,
+  ALTA: 1,
+  MEDIA: 2,
+  BAIXA: 3,
 }
 
 const DISCIPLINAS_INICIAIS = [
@@ -157,7 +158,15 @@ const TAREFAS_MOCK = [
     disciplinaId: 6,
     disciplina: 'Arquitetura de Computadores',
     status: 'PENDENTE',
-    diasParaEntrega: 7,
+    diasParaEntrega: -2, // exemplo: atrasada (vencida ha 2 dias)
+  },
+  {
+    id: 8,
+    titulo: 'Exercicio opcional - leitura',
+    disciplinaId: 1,
+    disciplina: 'Algoritmos e Programacao',
+    status: 'PENDENTE',
+    diasParaEntrega: 15, // exemplo: baixa prioridade (verde)
   },
 ]
 
@@ -182,6 +191,10 @@ function calcularPrioridade(dataEntrega, status) {
   const diffMs = dataEntrega.getTime() - hoje.getTime()
   const diasParaEntrega = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
+  if (diasParaEntrega < 0) {
+    return 'ATRASADA'
+  }
+
   if (diasParaEntrega < 2) {
     return 'ALTA'
   }
@@ -198,13 +211,17 @@ function formatarPrazo(dataEntrega) {
   hoje.setHours(0, 0, 0, 0)
   const diffMs = dataEntrega.getTime() - hoje.getTime()
   const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  if (dias < 0) {
+    const vencidos = Math.abs(dias)
+    return `Venceu há ${vencidos} ${vencidos === 1 ? 'dia' : 'dias'}`
+  }
 
-  if (dias <= 0) {
+  if (dias === 0) {
     return 'Hoje'
   }
 
   if (dias === 1) {
-    return 'Amanha'
+    return 'Amanhã'
   }
 
   return `${dias} dias`
@@ -358,7 +375,7 @@ export function TelaDashboard() {
         prazoDias: tarefa.diasParaEntrega,
       }
     })
-      .filter((tarefa) => tarefa.prioridade === 'ALTA' || tarefa.prioridade === 'MEDIA')
+      .filter((tarefa) => tarefa.status !== 'CONCLUIDA')
       .sort((a, b) => {
         const ordemPrioridade = ORDEM_PRIORIDADE[a.prioridade] - ORDEM_PRIORIDADE[b.prioridade]
         if (ordemPrioridade !== 0) {
@@ -693,18 +710,18 @@ export function TelaDashboard() {
             {tarefasPriorizadasPaginadas.map((tarefa) => (
               <article
                 key={tarefa.id}
-                className={`item-prioritaria ${tarefa.prioridade === 'ALTA' ? 'prioridade-alta' : ''}`}
+                className={`item-prioritaria ${tarefa.prioridade === 'ATRASADA' ? 'prioridade-atrasada' : tarefa.prioridade === 'ALTA' ? 'prioridade-alta' : tarefa.prioridade === 'MEDIA' ? 'prioridade-media' : tarefa.prioridade === 'BAIXA' ? 'prioridade-baixa' : ''}`}
               >
                 <h3>{tarefa.titulo}</h3>
                 <p>{tarefa.disciplina}</p>
-                <small>Prioridade: {tarefa.prioridade === 'ALTA' ? 'Alto' : 'Medio'}</small>
+                <small>Prioridade: {tarefa.prioridade === 'ALTA' ? 'Alto' : tarefa.prioridade === 'MEDIA' ? 'Medio' : tarefa.prioridade === 'BAIXA' ? 'Baixo' : tarefa.prioridade === 'ATRASADA' ? 'Atrasada' : '—'}</small>
                 <small>Prazo: {tarefa.prazo}</small>
               </article>
             ))}
 
             {tarefasPriorizadasVisiveis.length === 0 && (
               <p className="mensagem-vazia-prioritarias">
-                Sem tarefas de prioridade alta ou media para esta disciplina.
+                Sem tarefas prioritarias para esta disciplina.
               </p>
             )}
           </div>
