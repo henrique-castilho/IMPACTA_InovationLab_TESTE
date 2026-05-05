@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Configurações específicas do projeto
+src/main/resources/application.properties_example

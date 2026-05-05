@@ -52,10 +52,6 @@ public class DashboardController {
         return ResponseEntity.ok(dashboardService.obterGraficosTarefasPorStatus(usuario));
     }
 
-    /**
-     * Endpoint 4: GET /dashboard/disciplinas
-     * Retorna página de disciplinas com dados para cards (6 por página por padrão)
-     */
     @GetMapping("/disciplinas")
     public ResponseEntity<Page<DisciplinaDashboardDTO>> obterDisciplinasDashboard(
             @RequestParam(defaultValue = "0") int page,
@@ -65,12 +61,6 @@ public class DashboardController {
         return ResponseEntity.ok(dashboardService.obterDisciplinasDashboard(usuario, pageable));
     }
 
-    /**
-     * Endpoint 5: GET /dashboard/tarefas-prioritarias
-     * Retorna página de tarefas não concluídas ordenadas por prioridade e prazo
-     * Pode filtrar por disciplinaId via query param
-     * Paginação padrão: 4 por página
-     */
     @GetMapping("/tarefas-prioritarias")
     public ResponseEntity<Page<TarefaPrioritariaDTO>> obterTarefasPrioritarias(
             @RequestParam(required = false) Long disciplinaId,
