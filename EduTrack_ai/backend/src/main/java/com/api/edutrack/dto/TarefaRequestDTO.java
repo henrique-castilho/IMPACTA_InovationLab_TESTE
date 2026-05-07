@@ -15,11 +15,11 @@ public class TarefaRequestDTO {
     private Long disciplinaId;
 
     @NotBlank(message = "Titulo e obrigatorio")
-    @Size(max = 150, message = "Titulo deve ter no maximo 150 caracteres")
+    @Size(min = 3, max = 150, message = "Titulo deve ter entre 3 e 150 caracteres")
     private String titulo;
 
     @NotBlank(message = "Descricao e obrigatoria")
-    @Size(max = 2000, message = "Descricao deve ter no maximo 2000 caracteres")
+    @Size(min = 3, max = 2000, message = "Descricao deve ter entre 3 e 2000 caracteres")
     private String descricao;
 
     @NotNull(message = "Data de entrega e obrigatoria")

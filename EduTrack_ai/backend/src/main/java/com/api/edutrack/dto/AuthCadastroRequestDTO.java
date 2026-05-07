@@ -11,7 +11,7 @@ import lombok.Setter;
 public class AuthCadastroRequestDTO {
 
     @NotBlank(message = "Nome e obrigatorio")
-    @Size(max = 120, message = "Nome deve ter no maximo 120 caracteres")
+    @Size(min = 3, max = 120, message = "Nome deve ter entre 3 e 120 caracteres.")
     private String nome;
 
     @NotBlank(message = "Email e obrigatorio")

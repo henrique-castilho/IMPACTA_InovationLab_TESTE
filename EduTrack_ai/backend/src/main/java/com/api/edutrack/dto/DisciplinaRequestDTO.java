@@ -13,11 +13,11 @@ import lombok.Setter;
 @Setter
 public class DisciplinaRequestDTO {
     @NotBlank(message = "Nome e obrigatorio")
-    @Size(max = 120, message = "Nome deve ter no maximo 120 caracteres")
+    @Size(min = 3, max = 120, message = "Nome deve ter entre 3 e 120 caracteres")
     private String nome;
 
     @NotBlank(message = "Professor e obrigatorio")
-    @Size(max = 120, message = "Nome do professor deve ter no maximo 120 caracteres")
+    @Size(min = 3, max = 120, message = "Nome do professor deve ter entre 3 e 120 caracteres")
     private String professor;
 
     @NotNull(message = "Carga horaria e obrigatoria")
@@ -25,7 +25,7 @@ public class DisciplinaRequestDTO {
     private Integer cargaHoraria;
 
     @NotBlank(message = "Descricao e obrigatoria")
-    @Size(max = 1000, message = "Descricao deve ter no maximo 1000 caracteres")
+    @Size(min = 3, max = 1000, message = "Descricao deve ter entre 3 e 1000 caracteres")
     private String descricao;
 
     @NotNull(message = "Data de inicio e obrigatoria")

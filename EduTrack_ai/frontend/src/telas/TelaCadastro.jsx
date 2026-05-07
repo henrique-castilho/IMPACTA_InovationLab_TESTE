@@ -2,15 +2,42 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
 import { ToggleTema } from '../componentes/ToggleTema'
+import api, { CHAVE_TOKEN } from '../services/api'
 import './TelaCadastro.css'
 
 export function TelaCadastro() {
+  const [nome, setNome] = useState('')
+  const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
+  const [carregando, setCarregando] = useState(false)
+  const [erro, setErro] = useState('')
   const navigate = useNavigate()
 
-  function lidarComCadastro(evento) {
+  async function lidarComCadastro(evento) {
     evento.preventDefault()
-    navigate('/dashboard')
+    setCarregando(true)
+    setErro('')
+
+    try {
+      const resposta = await api.post('/auth/cadastro', { nome, email, senha })
+      
+      // Salva o token retornado para logar automaticamente
+      const { token } = resposta.data
+      window.localStorage.setItem(CHAVE_TOKEN, token)
+      
+      // Redireciona para o dashboard
+      navigate('/dashboard')
+    } catch (err) {
+      // Extrai mensagem de erro especifica (ex: Email ja cadastrado ou Nome muito curto)
+      const mensagemErro = err.response?.data?.detalhes 
+        ? Object.values(err.response.data.detalhes)[0]
+        : err.response?.data?.mensagem || 'Erro ao realizar cadastro.'
+      
+      setErro(mensagemErro)
+    } finally {
+      setCarregando(false)
+    }
   }
 
   return (
@@ -32,12 +59,29 @@ export function TelaCadastro() {
           <h2>Criar Conta</h2>
           <p className="subtitulo">Cadastre-se para comecar a rastrear seu progresso</p>
 
+          {erro && <div className="mensagem-erro-login" style={{ marginBottom: '1rem' }}>{erro}</div>}
+
           <form onSubmit={lidarComCadastro}>
             <label htmlFor="nome-cadastro">Nome Completo</label>
-            <input id="nome-cadastro" type="text" placeholder="Seu nome" required />
+            <input 
+              id="nome-cadastro" 
+              type="text" 
+              placeholder="Seu nome" 
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              minLength={3}
+              required 
+            />
 
             <label htmlFor="email-cadastro">Email</label>
-            <input id="email-cadastro" type="email" placeholder="seu@email.com" required />
+            <input 
+              id="email-cadastro" 
+              type="email" 
+              placeholder="seu@email.com" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required 
+            />
 
             <label htmlFor="senha-cadastro">Senha</label>
             <div className="campo-senha">
@@ -45,6 +89,9 @@ export function TelaCadastro() {
                 id="senha-cadastro"
                 type={mostrarSenha ? 'text' : 'password'}
                 placeholder="••••••••"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                minLength={6}
                 required
               />
               <button
@@ -57,8 +104,8 @@ export function TelaCadastro() {
               </button>
             </div>
 
-            <button type="submit" className="botao-primario">
-              Criar Conta
+            <button type="submit" className="botao-primario" disabled={carregando}>
+              {carregando ? 'Criando Conta...' : 'Criar Conta'}
             </button>
           </form>
 
