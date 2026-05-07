@@ -200,3 +200,15 @@ body.dark-mode .botao-olho {
     font-size: 1.4rem;
   }
 }
+
+.mensagem-erro-login {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  margin-bottom: 16px;
+  text-align: center;
+  font-weight: 500;
+}
