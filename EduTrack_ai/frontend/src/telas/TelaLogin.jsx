@@ -2,9 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
 import { ToggleTema } from '../componentes/ToggleTema'
+import api, { CHAVE_TOKEN } from '../services/api'
 import './TelaLogin.css'
-
-export const CHAVE_TOKEN = 'edutrack-token'
 
 export function TelaLogin() {
   const [email, setEmail] = useState('')
@@ -20,29 +19,12 @@ export function TelaLogin() {
     setErro('')
 
     try {
-      const resposta = await fetch('http://localhost:8080/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, senha }),
-      })
+      const resposta = await api.post('/auth/login', { email, senha })
 
-      if (!resposta.ok) {
-        const dadosErro = await resposta.json().catch(() => ({}))
-        
-        // Se houver detalhes de validacao (ex: email invalido), mostramos o primeiro erro
-        if (dadosErro.detalhes && Object.keys(dadosErro.detalhes).length > 0) {
-          const primeiraMensagem = Object.values(dadosErro.detalhes)[0]
-          throw new Error(primeiraMensagem)
-        }
-        
-        throw new Error(dadosErro.mensagem || 'Falha na autenticacao. Verifique suas credenciais.')
-      }
-
-      const dados = await resposta.json()
+      // O Axios já lida com status de erro lançando exceção,
+      // e os dados vêm em resposta.data
+      const dados = resposta.data
       
-      // O backend retorna { token: "...", tipo: "Bearer" }
       if (dados.token) {
         window.localStorage.setItem(CHAVE_TOKEN, dados.token)
         navigate('/dashboard')
@@ -50,7 +32,12 @@ export function TelaLogin() {
         throw new Error('Token nao recebido do servidor.')
       }
     } catch (err) {
-      setErro(err.message)
+      // Tratamento de erro ajustado para o formato do Axios
+      const mensagemErro = err.response?.data?.detalhes 
+        ? Object.values(err.response.data.detalhes)[0]
+        : err.response?.data?.mensagem || 'Falha na autenticacao. Verifique suas credenciais.'
+      
+      setErro(mensagemErro)
     } finally {
       setCarregando(false)
     }
