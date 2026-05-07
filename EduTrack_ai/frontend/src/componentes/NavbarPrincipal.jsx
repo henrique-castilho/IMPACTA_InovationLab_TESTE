@@ -1,11 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { ToggleTema } from './ToggleTema'
+import { CHAVE_TOKEN } from '../services/api'
 import './NavbarPrincipal.css'
 
 export function NavbarPrincipal({ nomeUsuario }) {
   const navigate = useNavigate()
 
   function handleSair() {
+    window.localStorage.removeItem(CHAVE_TOKEN)
     navigate('/login')
   }
 

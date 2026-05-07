@@ -12,6 +12,8 @@ import { TelaLogin } from './telas/TelaLogin'
 import { TelaPerfil } from './telas/TelaPerfil'
 import { TelaTarefas } from './telas/TelaTarefas'
 
+import { RotaProtegida } from './componentes/RotaProtegida'
+
 function App() {
   useLayoutEffect(() => {
     try {
@@ -30,13 +32,22 @@ function App() {
       <Route path="/login" element={<TelaLogin />} />
       <Route path="/cadastro" element={<TelaCadastro />} />
       <Route path="/esqueci-senha" element={<TelaEsqueciSenha />} />
-      <Route element={<LayoutLogado />}>
+      
+      {/* Envolvemos todas as rotas internas na RotaProtegida */}
+      <Route 
+        element={
+          <RotaProtegida>
+            <LayoutLogado />
+          </RotaProtegida>
+        }
+      >
         <Route path="/dashboard" element={<TelaDashboard />} />
         <Route path="/disciplinas" element={<TelaDisciplinas />} />
         <Route path="/insights" element={<TelaInsights />} />
         <Route path="/perfil" element={<TelaPerfil />} />
         <Route path="/tarefas" element={<TelaTarefas />} />
       </Route>
+
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
