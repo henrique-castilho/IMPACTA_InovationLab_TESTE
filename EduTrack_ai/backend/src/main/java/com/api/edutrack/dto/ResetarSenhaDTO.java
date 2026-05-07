@@ -13,6 +13,7 @@ public class ResetarSenhaDTO {
 
     @NotBlank(message = "Email e obrigatorio")
     @Email(message = "Email invalido")
+    @Size(max = 180, message = "Email deve ter no maximo 180 caracteres")
     private String email;
 
     @NotBlank(message = "Codigo e obrigatorio")
