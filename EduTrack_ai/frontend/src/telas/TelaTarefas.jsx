@@ -267,7 +267,11 @@ export function TelaTarefas() {
 
   const tarefasFiltradas = useMemo(() => {
     return tarefasEnriquecidas
-      .filter((tarefa) => (statusFiltro === 'TODOS' ? true : tarefa.status === statusFiltro))
+      .filter((tarefa) => {
+        if (statusFiltro === 'TODOS') return true
+        if (statusFiltro === 'ATRASADAS') return tarefa.atrasada
+        return tarefa.status === statusFiltro
+      })
       .filter((tarefa) => (disciplinaFiltro === 'TODAS' ? true : tarefa.disciplinaId === Number(disciplinaFiltro)))
       .sort((a, b) => {
         const prioridadeA = a.prioridade ?? 'SEM_PRIORIDADE'
@@ -429,6 +433,7 @@ export function TelaTarefas() {
             Status
             <select value={statusFiltro} onChange={(event) => setStatusFiltro(event.target.value)}>
               <option value="TODOS">Todos os Status</option>
+              <option value="ATRASADAS">Atrasadas</option>
               <option value="PENDENTE">Pendente</option>
               <option value="EM_ANDAMENTO">Em Andamento</option>
               <option value="CONCLUIDA">Concluida</option>

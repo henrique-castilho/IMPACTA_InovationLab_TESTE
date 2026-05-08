@@ -67,6 +67,7 @@ public class TarefaService {
     }
 
     private int prioridadeOrdem(String prioridade) {
+        if (prioridade == null) return 4;
         return switch (prioridade) {
             case "ALTA" -> 0;
             case "MEDIA" -> 1;
@@ -136,12 +137,14 @@ public class TarefaService {
     }
 
     private TarefaResponseDTO toDTO(Tarefa t) {
-        String prioridade = calcularPrioridade(t.getDataEntrega());
+        String prioridade = calcularPrioridade(t.getDataEntrega(), t.getStatus());
         return new TarefaResponseDTO(t.getId(), t.getTitulo(), t.getDescricao(), t.getDataEntrega(), t.getStatus().name(), t.getDisciplina().getId(), t.getDisciplina().getNome(), prioridade);
     }
 
-    private String calcularPrioridade(LocalDate dataEntrega) {
+    private String calcularPrioridade(LocalDate dataEntrega, StatusTarefa status) {
+        if (status == StatusTarefa.CONCLUIDA) return null;
         if (dataEntrega == null) return "BAIXA";
+        
         long dias = ChronoUnit.DAYS.between(LocalDate.now(), dataEntrega);
         if (dias < 0) return "ATRASADA";
         if (dias < 2) return "ALTA";
