@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.api.edutrack.dto.DisciplinaRequestDTO;
 import com.api.edutrack.dto.DisciplinaResponseDTO;
+import com.api.edutrack.dto.DisciplinaResumoDTO;
 import com.api.edutrack.entity.Usuario;
 import com.api.edutrack.service.DisciplinaService;
 import com.api.edutrack.service.UsuarioAutenticadoService;
@@ -35,15 +36,9 @@ public class DisciplinaController {
     }
 
     @GetMapping("/resumo")
-    public com.api.edutrack.dto.DisciplinaResumoDTO resumo() {
+    public DisciplinaResumoDTO resumo() {
         Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();
         return disciplinaService.resumo(usuario);
-    }
-
-    @GetMapping("/{id}")
-    public DisciplinaResponseDTO detalhar(@PathVariable Long id) {
-        Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();
-        return disciplinaService.detalhar(id, usuario);
     }
 
     @PutMapping("/{id}")

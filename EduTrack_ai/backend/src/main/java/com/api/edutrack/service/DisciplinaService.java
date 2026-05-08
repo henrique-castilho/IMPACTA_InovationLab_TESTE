@@ -44,12 +44,6 @@ public class DisciplinaService {
         return disciplinaRepository.findByUsuario(usuario, pageable).map(this::toResponse);
     }
 
-    public DisciplinaResponseDTO detalhar(Long id, Usuario usuario) {
-        Disciplina disciplina = disciplinaRepository.findByIdAndUsuario(id, usuario)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Disciplina nao encontrada"));
-        return toResponse(disciplina);
-    }
-
     public DisciplinaResponseDTO atualizar(Long id, Usuario usuario, DisciplinaRequestDTO dto) {
         validarRegras(dto);
         Disciplina disciplina = disciplinaRepository.findByIdAndUsuario(id, usuario)

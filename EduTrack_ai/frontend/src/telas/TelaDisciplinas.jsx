@@ -1,89 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Toast } from '../componentes/Toast'
+import api from '../services/api'
 import './TelaDisciplinas.css'
 
+
 const ITENS_POR_PAGINA_DISCIPLINAS = 6
-
-const DISCIPLINAS_INICIAIS = [
-  {
-    id: 1,
-    nome: 'Algoritmos e Programacao',
-    professor: 'Prof. Carlos Silva',
-    cargaHoraria: 42,
-    descricao: 'Fundamentos de logica, estruturas de controle e resolucao de problemas.',
-    dataInicio: '2026-02-03',
-    dataFim: '2026-06-28',
-  },
-  {
-    id: 2,
-    nome: 'Banco de Dados',
-    professor: 'Profa. Ana Santos',
-    cargaHoraria: 30,
-    descricao: 'Modelagem relacional, SQL e normalizacao aplicada ao projeto.',
-    dataInicio: '2026-02-05',
-    dataFim: '2026-06-25',
-  },
-  {
-    id: 3,
-    nome: 'Desenvolvimento Web',
-    professor: 'Prof. Ricardo Lima',
-    cargaHoraria: 38,
-    descricao: 'Interfaces web modernas com foco em experiencia do usuario.',
-    dataInicio: '2026-02-10',
-    dataFim: '2026-06-30',
-  },
-  {
-    id: 4,
-    nome: 'Engenharia de Software',
-    professor: 'Profa. Maria Costa',
-    cargaHoraria: 48,
-    descricao: 'Metodos ageis, requisitos e qualidade de software em equipes.',
-    dataInicio: '2026-02-01',
-    dataFim: '2026-07-05',
-    tarefasConcluidas: 7,
-    tarefasTotais: 15,
-  },
-  {
-    id: 5,
-    nome: 'Inteligencia Artificial',
-    professor: 'Prof. Roberto Almeida',
-    cargaHoraria: 36,
-    descricao: 'Introducao a modelos de IA, classificacao e regressao.',
-    dataInicio: '2026-02-12',
-    dataFim: '2026-07-01',
-    tarefasConcluidas: 4,
-    tarefasTotais: 9,
-  },
-  {
-    id: 6,
-    nome: 'Arquitetura de Computadores',
-    professor: 'Profa. Daniela Rocha',
-    cargaHoraria: 32,
-    descricao: 'Organizacao de hardware, processadores e memoria.',
-    dataInicio: '2026-02-08',
-    dataFim: '2026-06-29',
-    tarefasConcluidas: 6,
-    tarefasTotais: 11,
-  },
-  {
-    id: 7,
-    nome: 'Seguranca da Informacao',
-    professor: 'Prof. Marcos Ferreira',
-    cargaHoraria: 28,
-    descricao: 'Principios de seguranca, ameacas e boas praticas.',
-    dataInicio: '2026-02-14',
-    dataFim: '2026-06-27',
-    tarefasConcluidas: 3,
-    tarefasTotais: 8,
-  },
-]
-
-function aplicarPaginacaoTemporaria(lista, paginaAtual, itensPorPagina) {
-  // Temporario: este recorte local simula a resposta paginada do backend.
-  // Quando a API estiver pronta, substituir por: fetch(`/api/disciplinas?page=${paginaAtual}&limit=${itensPorPagina}`).
-  const inicio = (paginaAtual - 1) * itensPorPagina
-  return lista.slice(inicio, inicio + itensPorPagina)
-}
 
 function montarPaginasVisiveis(totalPaginas, paginaAtual) {
   if (totalPaginas <= 7) {
@@ -183,11 +104,19 @@ function formatarData(dataIso) {
 }
 
 export function TelaDisciplinas() {
-  const [disciplinas, setDisciplinas] = useState(DISCIPLINAS_INICIAIS)
+  const [disciplinas, setDisciplinas] = useState([])
+  const [resumo, setResumo] = useState({ totalDisciplinas: 0, cargaHorariaTotal: 0 })
   const [paginaAtualDisciplinas, setPaginaAtualDisciplinas] = useState(1)
+  const [totalPaginas, setTotalPaginas] = useState(1)
+  const [totalElementos, setTotalElementos] = useState(0)
   const [termoPesquisa, setTermoPesquisa] = useState('')
+  const [termoPesquisaDebounced, setTermoPesquisaDebounced] = useState('')
+  const [carregando, setCarregando] = useState(false)
   const [modalAberto, setModalAberto] = useState(false)
   const [disciplinaEmEdicaoId, setDisciplinaEmEdicaoId] = useState(null)
+  const [modalExclusaoAberto, setModalExclusaoAberto] = useState(false)
+  const [disciplinaExclusao, setDisciplinaExclusao] = useState(null)
+  const [mensagemErroModal, setMensagemErroModal] = useState('')
   const [toast, setToast] = useState({ aberto: false, mensagem: '' })
   const [formulario, setFormulario] = useState({
     nome: '',
@@ -198,41 +127,58 @@ export function TelaDisciplinas() {
     dataFim: '',
   })
 
-  const totalCargaHoraria = useMemo(
-    () => disciplinas.reduce((acumulador, item) => acumulador + item.cargaHoraria, 0),
-    [disciplinas],
-  )
-
-  const disciplinasFiltradas = useMemo(() => {
-    const termoNormalizado = termoPesquisa.trim().toLowerCase()
-
-    if (!termoNormalizado) {
-      return disciplinas
+  // Busca o resumo das disciplinas
+  const buscarResumo = useCallback(async () => {
+    try {
+      const resposta = await api.get('/disciplinas/resumo')
+      setResumo(resposta.data)
+    } catch (err) {
+      console.error('Erro ao buscar resumo:', err)
     }
+  }, [])
 
-    return disciplinas.filter((disciplina) => {
-      return [disciplina.nome, disciplina.professor, disciplina.descricao]
-        .filter(Boolean)
-        .some((campo) => campo.toLowerCase().includes(termoNormalizado))
-    })
-  }, [disciplinas, termoPesquisa])
+  // Busca a lista de disciplinas paginada e com filtro
+  const buscarDisciplinas = useCallback(async (pagina, busca) => {
+    setCarregando(true)
+    try {
+      const resposta = await api.get('/disciplinas', {
+        params: {
+          page: pagina - 1, // Spring Data usa 0-based index
+          size: ITENS_POR_PAGINA_DISCIPLINAS,
+          search: busca || undefined
+        }
+      })
+      setDisciplinas(resposta.data.content)
+      setTotalPaginas(resposta.data.totalPages)
+      setTotalElementos(resposta.data.totalElements)
+    } catch (err) {
+      console.error('Erro ao buscar disciplinas:', err)
+    } finally {
+      setCarregando(false)
+    }
+  }, [])
 
-  const totalPaginasDisciplinas = useMemo(
-    () => Math.max(1, Math.ceil(disciplinasFiltradas.length / ITENS_POR_PAGINA_DISCIPLINAS)),
-    [disciplinasFiltradas.length],
-  )
+  useEffect(() => {
+    buscarResumo()
+  }, [buscarResumo])
 
-  const disciplinasPaginadas = useMemo(
-    // Temporario: hoje paginamos no frontend com slice; no backend, a tela deve consumir
-    // os dados ja paginados recebidos de /api/disciplinas?page=X&limit=6.
-    () =>
-      aplicarPaginacaoTemporaria(
-        disciplinasFiltradas,
-        paginaAtualDisciplinas,
-        ITENS_POR_PAGINA_DISCIPLINAS,
-      ),
-    [disciplinasFiltradas, paginaAtualDisciplinas],
-  )
+  // Efeito de Debounce
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setTermoPesquisaDebounced(termoPesquisa)
+    }, 500) // 500ms de delay
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [termoPesquisa])
+
+  // Volta para página 1 quando o termo de busca efetivo (debounced) muda
+  useEffect(() => {
+    setPaginaAtualDisciplinas(1)
+  }, [termoPesquisaDebounced])
+
+  useEffect(() => {
+    buscarDisciplinas(paginaAtualDisciplinas, termoPesquisaDebounced)
+  }, [paginaAtualDisciplinas, termoPesquisaDebounced, buscarDisciplinas])
 
   useEffect(() => {
     if (!toast.aberto) {
@@ -246,13 +192,10 @@ export function TelaDisciplinas() {
     return () => window.clearTimeout(identificador)
   }, [toast.aberto])
 
-  useEffect(() => {
-    setPaginaAtualDisciplinas((paginaAtual) => Math.min(Math.max(paginaAtual, 1), totalPaginasDisciplinas))
-  }, [totalPaginasDisciplinas])
-
-  useEffect(() => {
-    setPaginaAtualDisciplinas(1)
-  }, [termoPesquisa])
+  // Atualiza apenas o termo imediato, o debounced lida com a requisição e a paginação
+  function handlePesquisa(event) {
+    setTermoPesquisa(event.target.value)
+  }
 
   function mostrarToast(mensagem) {
     setToast({ aberto: true, mensagem })
@@ -269,10 +212,7 @@ export function TelaDisciplinas() {
       dataFim: '',
     })
     setModalAberto(true)
-  }
-
-  function handlePesquisa(event) {
-    setTermoPesquisa(event.target.value)
+    setMensagemErroModal('')
   }
 
   function abrirModalEdicao(id) {
@@ -291,11 +231,15 @@ export function TelaDisciplinas() {
       dataFim: disciplina.dataFim ?? '',
     })
     setModalAberto(true)
+    setMensagemErroModal('')
   }
+
+
 
   function fecharModal() {
     setModalAberto(false)
     setDisciplinaEmEdicaoId(null)
+    setMensagemErroModal('')
   }
 
   function handleInput(event) {
@@ -306,52 +250,51 @@ export function TelaDisciplinas() {
     }))
   }
 
-  function handleSalvarDisciplina(event) {
+  async function handleSalvarDisciplina(event) {
     event.preventDefault()
 
-    if (
-      !formulario.nome ||
-      !formulario.professor ||
-      !formulario.cargaHoraria ||
-      !formulario.descricao ||
-      !formulario.dataInicio ||
-      !formulario.dataFim
-    ) {
-      return
-    }
-
     const payload = montarPayloadBackend(formulario)
-    if (!payload.cargaHoraria || payload.cargaHoraria <= 0 || payload.dataFim < payload.dataInicio) {
-      return
+    
+    setMensagemErroModal('')
+    
+    try {
+      if (disciplinaEmEdicaoId) {
+        await api.put(`/disciplinas/${disciplinaEmEdicaoId}`, payload)
+        mostrarToast('Disciplina atualizada com sucesso!')
+      } else {
+        await api.post('/disciplinas', payload)
+        mostrarToast('Disciplina criada com sucesso!')
+      }
+      fecharModal()
+      buscarDisciplinas(paginaAtualDisciplinas, termoPesquisaDebounced)
+      buscarResumo()
+    } catch (err) {
+      const msg = err.response?.data?.detalhes 
+        ? Object.values(err.response.data.detalhes)[0]
+        : err.response?.data?.mensagem || 'Erro ao salvar disciplina.'
+      setMensagemErroModal(msg)
     }
-
-    if (disciplinaEmEdicaoId) {
-      setDisciplinas((atual) =>
-        atual.map((item) =>
-          item.id === disciplinaEmEdicaoId
-            ? {
-                ...item,
-                ...payload,
-              }
-            : item,
-        ),
-      )
-    } else {
-      setDisciplinas((atual) => [
-        {
-          id: Date.now(),
-          ...payload,
-        },
-        ...atual,
-      ])
-    }
-
-    fecharModal()
   }
 
   function handleExcluirDisciplina(id, nome) {
-    setDisciplinas((atual) => atual.filter((item) => item.id !== id))
-    mostrarToast(`Disciplina "${nome}" excluida com sucesso.`)
+    setDisciplinaExclusao({ id, nome })
+    setModalExclusaoAberto(true)
+  }
+
+  async function confirmarExclusao() {
+    if (!disciplinaExclusao) return
+
+    try {
+      await api.delete(`/disciplinas/${disciplinaExclusao.id}`)
+      mostrarToast(`Disciplina "${disciplinaExclusao.nome}" excluida com sucesso.`)
+      buscarDisciplinas(paginaAtualDisciplinas, termoPesquisaDebounced)
+      buscarResumo()
+    } catch (err) {
+      console.error('Erro ao excluir:', err)
+    } finally {
+      setModalExclusaoAberto(false)
+      setDisciplinaExclusao(null)
+    }
   }
 
   return (
@@ -380,24 +323,26 @@ export function TelaDisciplinas() {
         </label>
         <small>
           {termoPesquisa
-            ? `${disciplinasFiltradas.length} resultado(s) para "${termoPesquisa}"`
-            : `${disciplinas.length} disciplina(s) cadastrada(s)`}
+            ? `${totalElementos} resultado(s) para "${termoPesquisa}"`
+            : `${resumo.totalDisciplinas} disciplina(s) cadastrada(s)`}
         </small>
       </section>
 
       <section className="resumo-disciplinas" aria-label="Resumo das disciplinas">
         <article>
           <span>Total de Disciplinas</span>
-          <strong>{disciplinas.length}</strong>
+          <strong>{resumo.totalDisciplinas}</strong>
         </article>
         <article>
           <span>Carga Horaria Total</span>
-          <strong>{totalCargaHoraria}h</strong>
+          <strong>{resumo.cargaHorariaTotal}h</strong>
         </article>
       </section>
 
       <section className="grade-disciplinas" aria-label="Lista de disciplinas em cards">
-        {disciplinasFiltradas.length === 0 ? (
+        {carregando ? (
+          <div className="vazio-disciplinas">Carregando disciplinas...</div>
+        ) : disciplinas.length === 0 ? (
           <article className="vazio-disciplinas" role="status" aria-live="polite">
             <span className="vazio-icone" aria-hidden="true">
               📚
@@ -409,7 +354,7 @@ export function TelaDisciplinas() {
             </h3>
           </article>
         ) : (
-          disciplinasPaginadas.map((disciplina) => (
+          disciplinas.map((disciplina) => (
             <article key={disciplina.id} className="card-disciplina-gestao">
               <header>
                 <div>
@@ -454,7 +399,7 @@ export function TelaDisciplinas() {
       <div className="paginacao-area">
         <PaginacaoNumerada
           paginaAtual={paginaAtualDisciplinas}
-          totalPaginas={totalPaginasDisciplinas}
+          totalPaginas={totalPaginas}
           onChange={setPaginaAtualDisciplinas}
           ariaLabel="Paginacao de disciplinas"
         />
@@ -484,6 +429,19 @@ export function TelaDisciplinas() {
             </header>
 
             <form className="formulario-disciplina" onSubmit={handleSalvarDisciplina}>
+              {mensagemErroModal && (
+                <div style={{ 
+                  color: 'var(--cor-perigo)', 
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                  padding: '10px', 
+                  borderRadius: '6px',
+                  marginBottom: '15px',
+                  fontSize: '0.9rem',
+                  border: '1px solid var(--cor-perigo)'
+                }}>
+                  {mensagemErroModal}
+                </div>
+              )}
               <label htmlFor="nome">
                 Nome *
                 <input
@@ -571,6 +529,37 @@ export function TelaDisciplinas() {
               </footer>
             </form>
           </section>
+        </div>
+      )}
+
+      {modalExclusaoAberto && (
+        <div className="fundo-modal-perfil">
+          <div className="modal-perfil">
+            <h2>Excluir Disciplina</h2>
+            <p>
+              Tem certeza que deseja excluir a disciplina <strong>"{disciplinaExclusao?.nome}"</strong>?
+              <br /><br />
+              <span style={{ color: 'var(--cor-perigo)' }}>
+                Aviso: Deletar esta disciplina excluirá permanentemente todas as tarefas associadas a ela.
+              </span>
+            </p>
+            <div className="rodape-modal-perfil">
+              <button
+                type="button"
+                className="botao-modal-cancelar"
+                onClick={() => setModalExclusaoAberto(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="botao-modal-confirmar"
+                onClick={confirmarExclusao}
+              >
+                Sim, Excluir Tudo
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
