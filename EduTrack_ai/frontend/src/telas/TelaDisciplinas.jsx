@@ -145,7 +145,8 @@ export function TelaDisciplinas() {
         params: {
           page: pagina - 1, // Spring Data usa 0-based index
           size: ITENS_POR_PAGINA_DISCIPLINAS,
-          search: busca || undefined
+          search: busca || undefined,
+          sort: 'nome,asc'
         }
       })
       setDisciplinas(resposta.data.content)
