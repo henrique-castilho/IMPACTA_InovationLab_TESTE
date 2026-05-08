@@ -41,11 +41,12 @@ public class TarefaController {
     public ResponseEntity<Page<TarefaResponseDTO>> listar(
             @RequestParam(required = false) Long disciplinaId,
             @RequestParam(required = false) StatusTarefa status,
+            @RequestParam(required = false, defaultValue = "false") boolean atrasadas,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size) {
         Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();
         Pageable pageable = PageRequest.of(page, size);
-        Page<TarefaResponseDTO> result = tarefaService.listarTarefas(usuario, disciplinaId, status, pageable);
+        Page<TarefaResponseDTO> result = tarefaService.listarTarefas(usuario, disciplinaId, status, atrasadas, pageable);
         return ResponseEntity.ok(result);
     }
 
@@ -53,12 +54,6 @@ public class TarefaController {
     public ResponseEntity<TarefaStatsDTO> estatisticas() {
         Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();
         return ResponseEntity.ok(tarefaService.estatisticas(usuario));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<TarefaResponseDTO> buscar(@PathVariable Long id) {
-        Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();
-        return ResponseEntity.ok(tarefaService.buscarPorId(usuario, id));
     }
 
     @PostMapping

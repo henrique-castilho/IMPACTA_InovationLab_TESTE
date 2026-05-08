@@ -1,85 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Toast } from '../componentes/Toast'
+import api from '../services/api'
 import './TelaTarefas.css'
 
 const ITENS_POR_PAGINA_TAREFAS = 6
 
-const DISCIPLINAS_MOCK = [
-  { id: 1, nome: 'Algoritmos e Programacao' },
-  { id: 2, nome: 'Banco de Dados' },
-  { id: 3, nome: 'Desenvolvimento Web' },
-  { id: 4, nome: 'Engenharia de Software' },
-  { id: 5, nome: 'Inteligencia Artificial' },
-  { id: 6, nome: 'Arquitetura de Computadores' },
-  { id: 7, nome: 'Seguranca da Informacao' },
-]
-
-const TAREFAS_INICIAIS = [
-  {
-    id: 101,
-    titulo: 'Estudar algoritmos de ordenacao',
-    descricao: 'Aplicar Quick Sort e Merge Sort',
-    dataEntrega: '2026-04-14',
-    status: 'PENDENTE',
-    disciplinaId: 1,
-  },
-  {
-    id: 102,
-    titulo: 'Implementar arvore binaria',
-    descricao: 'Criar estrutura de dados em Python',
-    dataEntrega: '2026-04-19',
-    status: 'EM_ANDAMENTO',
-    disciplinaId: 1,
-  },
-  {
-    id: 103,
-    titulo: 'Criar modelo ER',
-    descricao: 'Modelagem entidade-relacionamento do sistema',
-    dataEntrega: '2026-04-09',
-    status: 'CONCLUIDA',
-    disciplinaId: 2,
-  },
-  {
-    id: 104,
-    titulo: 'Montar backlog tecnico',
-    descricao: 'Organizar historias e prioridades do sprint',
-    dataEntrega: '2026-04-21',
-    status: 'PENDENTE',
-    disciplinaId: 4,
-  },
-  {
-    id: 105,
-    titulo: 'Treinar modelo de classificacao',
-    descricao: 'Avaliar acuracia com validacao cruzada',
-    dataEntrega: '2026-05-10',
-    status: 'EM_ANDAMENTO',
-    disciplinaId: 5,
-  },
-  {
-    id: 106,
-    titulo: 'Revisao de pipeline de dados',
-    descricao: 'Ajustar preprocessamento e normalizacao',
-    dataEntrega: '2026-04-23',
-    status: 'PENDENTE',
-    disciplinaId: 5,
-  },
-  {
-    id: 107,
-    titulo: 'Exercicios de memoria cache',
-    descricao: 'Resolver lista sobre localidade temporal e espacial',
-    dataEntrega: '2026-04-27',
-    status: 'CONCLUIDA',
-    disciplinaId: 6,
-  },
-]
-
-const ORDEM_PRIORIDADE = {
-  ALTA: 0,
-  MEDIA: 1,
-  BAIXA: 2,
-  SEM_PRIORIDADE: 3,
-}
-
+// Mapeamentos de label para exibição amigável
 const LABEL_STATUS = {
   PENDENTE: 'Pendente',
   EM_ANDAMENTO: 'Em Andamento',
@@ -98,78 +24,27 @@ function inicioDoDia(data = new Date()) {
   return novaData
 }
 
-function calcularPrioridade(dataEntrega, status) {
-  if (status === 'CONCLUIDA') {
-    return null
-  }
-
-  const hoje = inicioDoDia()
-  const entrega = inicioDoDia(new Date(`${dataEntrega}T00:00:00`))
-  const diffMs = entrega.getTime() - hoje.getTime()
-  const diasParaEntrega = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diasParaEntrega < 2) {
-    return 'ALTA'
-  }
-
-  if (diasParaEntrega <= 7) {
-    return 'MEDIA'
-  }
-
-  return 'BAIXA'
-}
-
 function formatarData(dataIso) {
-  if (!dataIso) {
-    return '-'
-  }
-
-  const [ano, mes, dia] = dataIso.split('-')
+  if (!dataIso) return '-'
+  const [ano, mes, dia] = String(dataIso).split('-')
   return `${dia}/${mes}/${ano}`
-}
-
-function montarPayloadBackend(formulario) {
-  return {
-    titulo: formulario.titulo,
-    descricao: formulario.descricao,
-    dataEntrega: formulario.dataEntrega,
-    status: formulario.status,
-    disciplinaId: Number(formulario.disciplinaId),
-  }
-}
-
-function aplicarPaginacaoTemporaria(lista, paginaAtual, itensPorPagina) {
-  // Temporario: o frontend recorta os itens localmente enquanto nao existe endpoint paginado.
-  // Quando o backend estiver pronto, trocar por: fetch(`/api/tarefas?page=${paginaAtual}&limit=${itensPorPagina}`).
-  const inicio = (paginaAtual - 1) * itensPorPagina
-  return lista.slice(inicio, inicio + itensPorPagina)
 }
 
 function montarPaginasVisiveis(totalPaginas, paginaAtual) {
   if (totalPaginas <= 7) {
-    return Array.from({ length: totalPaginas }, (_, indice) => indice + 1)
+    return Array.from({ length: totalPaginas }, (_, i) => i + 1)
   }
-
   if (paginaAtual <= 4) {
     return [1, 2, 3, 4, 5, '...', totalPaginas]
   }
-
   if (paginaAtual >= totalPaginas - 3) {
     return [1, '...', totalPaginas - 4, totalPaginas - 3, totalPaginas - 2, totalPaginas - 1, totalPaginas]
   }
-
   return [1, '...', paginaAtual - 1, paginaAtual, paginaAtual + 1, '...', totalPaginas]
 }
 
-function PaginacaoNumerada({
-  paginaAtual,
-  totalPaginas,
-  onChange,
-  ariaLabel,
-}) {
-  if (totalPaginas <= 1) {
-    return null
-  }
+function PaginacaoNumerada({ paginaAtual, totalPaginas, onChange, ariaLabel }) {
+  if (totalPaginas <= 1) return null
 
   const paginasVisiveis = montarPaginasVisiveis(totalPaginas, paginaAtual)
 
@@ -193,7 +68,6 @@ function PaginacaoNumerada({
             </span>
           )
         }
-
         const ativa = paginaAtual === pagina
         return (
           <button
@@ -223,13 +97,24 @@ function PaginacaoNumerada({
 }
 
 export function TelaTarefas() {
-  const [tarefas, setTarefas] = useState(TAREFAS_INICIAIS)
-  const [paginaAtualTarefas, setPaginaAtualTarefas] = useState(1)
+  // ─── Estado principal ────────────────────────────────────────────────────────
+  const [tarefas, setTarefas] = useState([])
+  const [disciplinas, setDisciplinas] = useState([])
+  const [carregando, setCarregando] = useState(false)
+
+  // ─── Paginação e filtros ─────────────────────────────────────────────────────
+  const [paginaAtual, setPaginaAtual] = useState(1)
+  const [totalPaginas, setTotalPaginas] = useState(1)
   const [statusFiltro, setStatusFiltro] = useState('TODOS')
-  const [disciplinaFiltro, setDisciplinaFiltro] = useState('TODAS')
+  const [disciplinaFiltro, setDisciplinaFiltro] = useState('')
+
+  // ─── Estatísticas do topo ────────────────────────────────────────────────────
+  const [stats, setStats] = useState({ totalPendentes: 0, totalEmAndamento: 0, totalConcluidas: 0 })
+
+  // ─── Modal de criação/edição ─────────────────────────────────────────────────
   const [modalAberto, setModalAberto] = useState(false)
   const [tarefaEmEdicaoId, setTarefaEmEdicaoId] = useState(null)
-  const [toast, setToast] = useState({ aberto: false, mensagem: '' })
+  const [mensagemErroModal, setMensagemErroModal] = useState('')
   const [formulario, setFormulario] = useState({
     titulo: '',
     descricao: '',
@@ -238,113 +123,117 @@ export function TelaTarefas() {
     disciplinaId: '',
   })
 
+  // ─── Modal de exclusão ───────────────────────────────────────────────────────
+  const [modalExclusaoAberto, setModalExclusaoAberto] = useState(false)
+  const [tarefaExclusao, setTarefaExclusao] = useState(null)
+
+  // ─── Toast ───────────────────────────────────────────────────────────────────
+  const [toast, setToast] = useState({ aberto: false, mensagem: '' })
+
+  // ─── Enriquece tarefas com flag "atrasada" para exibição da tag no card ───────
   const tarefasEnriquecidas = useMemo(() => {
     const hoje = inicioDoDia()
-    
     return tarefas.map((tarefa) => {
-      const prioridade = calcularPrioridade(tarefa.dataEntrega, tarefa.status)
-      const disciplina = DISCIPLINAS_MOCK.find((item) => item.id === tarefa.disciplinaId)
-      
       const entrega = inicioDoDia(new Date(`${tarefa.dataEntrega}T00:00:00`))
       const atrasada = tarefa.status !== 'CONCLUIDA' && entrega < hoje
-
-      return {
-        ...tarefa,
-        prioridade,
-        atrasada,
-        disciplinaNome: disciplina?.nome ?? 'Disciplina desconhecida',
-      }
+      return { ...tarefa, atrasada }
     })
   }, [tarefas])
 
-  const contadores = useMemo(() => {
-    const pendentes = tarefasEnriquecidas.filter((item) => item.status === 'PENDENTE').length
-    const emAndamento = tarefasEnriquecidas.filter((item) => item.status === 'EM_ANDAMENTO').length
-    const concluidas = tarefasEnriquecidas.filter((item) => item.status === 'CONCLUIDA').length
-
-    return { pendentes, emAndamento, concluidas }
-  }, [tarefasEnriquecidas])
-
-  const tarefasFiltradas = useMemo(() => {
-    return tarefasEnriquecidas
-      .filter((tarefa) => {
-        if (statusFiltro === 'TODOS') return true
-        if (statusFiltro === 'ATRASADAS') return tarefa.atrasada
-        return tarefa.status === statusFiltro
-      })
-      .filter((tarefa) => (disciplinaFiltro === 'TODAS' ? true : tarefa.disciplinaId === Number(disciplinaFiltro)))
-      .sort((a, b) => {
-        const prioridadeA = a.prioridade ?? 'SEM_PRIORIDADE'
-        const prioridadeB = b.prioridade ?? 'SEM_PRIORIDADE'
-        const ordem = ORDEM_PRIORIDADE[prioridadeA] - ORDEM_PRIORIDADE[prioridadeB]
-
-        if (ordem !== 0) {
-          return ordem
-        }
-
-        return new Date(a.dataEntrega).getTime() - new Date(b.dataEntrega).getTime()
-      })
-  }, [tarefasEnriquecidas, statusFiltro, disciplinaFiltro])
-
-  const totalPaginasTarefas = useMemo(
-    () => Math.max(1, Math.ceil(tarefasFiltradas.length / ITENS_POR_PAGINA_TAREFAS)),
-    [tarefasFiltradas.length],
-  )
-
-  const tarefasPaginadas = useMemo(
-    // Temporario: hoje os itens da pagina sao montados no cliente; no futuro,
-    // a tela deve consumir diretamente a pagina retornada por /api/tarefas?page=X&limit=6.
-    () => aplicarPaginacaoTemporaria(tarefasFiltradas, paginaAtualTarefas, ITENS_POR_PAGINA_TAREFAS),
-    [tarefasFiltradas, paginaAtualTarefas],
-  )
-
-  useEffect(() => {
-    if (!toast.aberto) {
-      return undefined
+  // ─── Busca disciplinas para popular o select do filtro e do modal ─────────────
+  const buscarDisciplinas = useCallback(async () => {
+    try {
+      const resposta = await api.get('/disciplinas', { params: { page: 0, size: 100 } })
+      const lista = resposta.data.content ?? []
+      lista.sort((a, b) => a.nome.localeCompare(b.nome))
+      setDisciplinas(lista)
+    } catch (err) {
+      console.error('Erro ao buscar disciplinas:', err)
     }
+  }, [])
 
-    const identificador = window.setTimeout(() => {
-      setToast({ aberto: false, mensagem: '' })
-    }, 3000)
+  // ─── Busca tarefas paginadas da API ─────────────────────────────────────────
+  const buscarTarefas = useCallback(async (pagina, statusAtual, disciplinaAtual) => {
+    setCarregando(true)
+    try {
+      const atrasadas = statusAtual === 'ATRASADAS'
+      const statusParaApi = atrasadas || statusAtual === 'TODOS' ? undefined : statusAtual
 
-    return () => window.clearTimeout(identificador)
-  }, [toast.aberto])
+      const resposta = await api.get('/tarefas', {
+        params: {
+          page: pagina - 1,
+          size: ITENS_POR_PAGINA_TAREFAS,
+          status: statusParaApi,
+          atrasadas: atrasadas || undefined,
+          disciplinaId: disciplinaAtual || undefined,
+        },
+      })
+      setTarefas(resposta.data.content ?? [])
+      setTotalPaginas(resposta.data.totalPages ?? 1)
+    } catch (err) {
+      console.error('Erro ao buscar tarefas:', err)
+    } finally {
+      setCarregando(false)
+    }
+  }, [])
+
+  // ─── Busca estatísticas do topo ─────────────────────────────────────────────
+  const buscarStats = useCallback(async () => {
+    try {
+      const resposta = await api.get('/tarefas/estatisticas')
+      setStats(resposta.data)
+    } catch (err) {
+      console.error('Erro ao buscar estatisticas:', err)
+    }
+  }, [])
+
+  // ─── Efeitos ─────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    buscarDisciplinas()
+    buscarStats()
+  }, [buscarDisciplinas, buscarStats])
 
   useEffect(() => {
-    setPaginaAtualTarefas((paginaAtual) => Math.min(Math.max(paginaAtual, 1), totalPaginasTarefas))
-  }, [totalPaginasTarefas])
+    buscarTarefas(paginaAtual, statusFiltro, disciplinaFiltro)
+  }, [paginaAtual, statusFiltro, disciplinaFiltro, buscarTarefas])
 
+  // Volta para página 1 ao mudar filtros
   useEffect(() => {
-    setPaginaAtualTarefas(1)
+    setPaginaAtual(1)
   }, [statusFiltro, disciplinaFiltro])
 
+  // Auto-fechar toast
+  useEffect(() => {
+    if (!toast.aberto) return undefined
+    const id = window.setTimeout(() => setToast({ aberto: false, mensagem: '' }), 3000)
+    return () => window.clearTimeout(id)
+  }, [toast.aberto])
+
+  // ─── Utilitários ─────────────────────────────────────────────────────────────
   function mostrarToast(mensagem) {
     setToast({ aberto: true, mensagem })
   }
 
+  function recarregar() {
+    buscarTarefas(paginaAtual, statusFiltro, disciplinaFiltro)
+    buscarStats()
+  }
+
+  // ─── Modal de criação/edição ─────────────────────────────────────────────────
   function abrirModalNovaTarefa() {
     setTarefaEmEdicaoId(null)
-    setFormulario({
-      titulo: '',
-      descricao: '',
-      dataEntrega: '',
-      status: 'PENDENTE',
-      disciplinaId: '',
-    })
+    setMensagemErroModal('')
+    setFormulario({ titulo: '', descricao: '', dataEntrega: '', status: 'PENDENTE', disciplinaId: '' })
     setModalAberto(true)
   }
 
-  function abrirModalEdicao(tarefaId) {
-    const tarefa = tarefas.find((item) => item.id === tarefaId)
-    if (!tarefa) {
-      return
-    }
-
-    setTarefaEmEdicaoId(tarefaId)
+  function abrirModalEdicao(tarefa) {
+    setTarefaEmEdicaoId(tarefa.id)
+    setMensagemErroModal('')
     setFormulario({
       titulo: tarefa.titulo,
       descricao: tarefa.descricao,
-      dataEntrega: tarefa.dataEntrega,
+      dataEntrega: tarefa.dataEntrega ?? '',
       status: tarefa.status,
       disciplinaId: String(tarefa.disciplinaId),
     })
@@ -354,56 +243,68 @@ export function TelaTarefas() {
   function fecharModal() {
     setModalAberto(false)
     setTarefaEmEdicaoId(null)
+    setMensagemErroModal('')
   }
 
   function handleInputFormulario(event) {
     const { name, value } = event.target
-    setFormulario((atual) => ({
-      ...atual,
-      [name]: value,
-    }))
+    setFormulario((atual) => ({ ...atual, [name]: value }))
   }
 
-  function handleSalvarTarefa(event) {
+  async function handleSalvarTarefa(event) {
     event.preventDefault()
+    setMensagemErroModal('')
 
-    if (!formulario.titulo || !formulario.descricao || !formulario.dataEntrega || !formulario.disciplinaId) {
-      return
+    const payload = {
+      titulo: formulario.titulo,
+      descricao: formulario.descricao,
+      dataEntrega: formulario.dataEntrega,
+      status: formulario.status,
+      disciplinaId: Number(formulario.disciplinaId),
     }
 
-    const payload = montarPayloadBackend(formulario)
-
-    if (tarefaEmEdicaoId) {
-      setTarefas((atual) =>
-        atual.map((item) =>
-          item.id === tarefaEmEdicaoId
-            ? {
-                ...item,
-                ...payload,
-              }
-            : item,
-        ),
-      )
-    } else {
-      setTarefas((atual) => [
-        {
-          id: Date.now(),
-          ...payload,
-        },
-        ...atual,
-      ])
+    try {
+      if (tarefaEmEdicaoId) {
+        await api.put(`/tarefas/${tarefaEmEdicaoId}`, payload)
+        mostrarToast('Tarefa atualizada com sucesso!')
+      } else {
+        await api.post('/tarefas', payload)
+        mostrarToast('Tarefa criada com sucesso!')
+      }
+      fecharModal()
+      recarregar()
+    } catch (err) {
+      const msg = err.response?.data?.detalhes
+        ? Object.values(err.response.data.detalhes)[0]
+        : err.response?.data?.mensagem || 'Erro ao salvar tarefa.'
+      setMensagemErroModal(msg)
     }
-
-    fecharModal()
   }
 
-  function handleExcluirTarefa(id) {
-    setTarefas((atual) => atual.filter((item) => item.id !== id))
-    mostrarToast('Tarefa excluida com sucesso.')
+  // ─── Modal de exclusão ───────────────────────────────────────────────────────
+  function handleExcluirTarefa(tarefa) {
+    setTarefaExclusao(tarefa)
+    setModalExclusaoAberto(true)
   }
 
+  async function confirmarExclusao() {
+    if (!tarefaExclusao) return
+    try {
+      await api.delete(`/tarefas/${tarefaExclusao.id}`)
+      mostrarToast(`Tarefa "${tarefaExclusao.titulo}" excluida com sucesso.`)
+      recarregar()
+    } catch (err) {
+      console.error('Erro ao excluir:', err)
+    } finally {
+      setModalExclusaoAberto(false)
+      setTarefaExclusao(null)
+    }
+  }
+
+  // ─── Renderização ─────────────────────────────────────────────────────────────
   return (
     <main className="tarefas-principal">
+      {/* Cabeçalho */}
       <section className="cabecalho-tarefas">
         <div>
           <h1>Gerenciar Tarefas</h1>
@@ -414,16 +315,17 @@ export function TelaTarefas() {
         </button>
       </section>
 
+      {/* Filtros */}
       <section className="painel-filtros" aria-label="Filtros de tarefas">
         <h2>Filtros</h2>
         <div className="linha-filtros">
           <label>
             Disciplina
-            <select value={disciplinaFiltro} onChange={(event) => setDisciplinaFiltro(event.target.value)}>
-              <option value="TODAS">Todas as Disciplinas</option>
-              {DISCIPLINAS_MOCK.map((disciplina) => (
-                <option key={disciplina.id} value={disciplina.id}>
-                  {disciplina.nome}
+            <select value={disciplinaFiltro} onChange={(e) => setDisciplinaFiltro(e.target.value)}>
+              <option value="">Todas as Disciplinas</option>
+              {disciplinas.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.nome}
                 </option>
               ))}
             </select>
@@ -431,7 +333,7 @@ export function TelaTarefas() {
 
           <label>
             Status
-            <select value={statusFiltro} onChange={(event) => setStatusFiltro(event.target.value)}>
+            <select value={statusFiltro} onChange={(e) => setStatusFiltro(e.target.value)}>
               <option value="TODOS">Todos os Status</option>
               <option value="ATRASADAS">Atrasadas</option>
               <option value="PENDENTE">Pendente</option>
@@ -442,65 +344,67 @@ export function TelaTarefas() {
         </div>
       </section>
 
+      {/* Cards de estatísticas */}
       <section className="cards-status" aria-label="Resumo de status das tarefas">
         <article className="card-status card-status-pendente">
           <header>
             <span>Pendentes</span>
-            <i className="icone-status" aria-hidden="true">
-              ○
-            </i>
+            <i className="icone-status" aria-hidden="true">○</i>
           </header>
-          <strong>{contadores.pendentes}</strong>
+          <strong>{stats.totalPendentes}</strong>
         </article>
 
         <article className="card-status card-status-andamento">
           <header>
             <span>Em Andamento</span>
-            <i className="icone-status" aria-hidden="true">
-              ◔
-            </i>
+            <i className="icone-status" aria-hidden="true">◔</i>
           </header>
-          <strong>{contadores.emAndamento}</strong>
+          <strong>{stats.totalEmAndamento}</strong>
         </article>
 
         <article className="card-status card-status-concluida">
           <header>
             <span>Concluidas</span>
-            <i className="icone-status" aria-hidden="true">
-              ✓
-            </i>
+            <i className="icone-status" aria-hidden="true">✓</i>
           </header>
-          <strong>{contadores.concluidas}</strong>
+          <strong>{stats.totalConcluidas}</strong>
         </article>
       </section>
 
+      {/* Lista de tarefas */}
       <section className="lista-tarefas" aria-label="Lista detalhada de tarefas">
-        {tarefasFiltradas.length === 0 ? (
+        {carregando ? (
+          <article className="vazio-tarefas" role="status">
+            <span className="vazio-icone" aria-hidden="true">⏳</span>
+            <h3>Carregando tarefas...</h3>
+          </article>
+        ) : tarefasEnriquecidas.length === 0 ? (
           <article className="vazio-tarefas" role="status" aria-live="polite">
-            <span className="vazio-icone" aria-hidden="true">
-              ✅
-            </span>
-            <h3>Você ainda não tem tarefas. Clique em + para começar</h3>
+            <span className="vazio-icone" aria-hidden="true">✅</span>
+            <h3>Nenhuma tarefa encontrada. Clique em + para comecar</h3>
           </article>
         ) : (
-          tarefasPaginadas.map((tarefa) => (
+          tarefasEnriquecidas.map((tarefa) => (
             <article key={tarefa.id} className="card-tarefa">
               <div className="conteudo-tarefa">
                 <div className="linha-principal-tarefa">
-                  <h3 className={tarefa.status === 'CONCLUIDA' ? 'texto-concluido' : ''}>{tarefa.titulo}</h3>
+                  <h3 className={tarefa.status === 'CONCLUIDA' ? 'texto-concluido' : ''}>
+                    {tarefa.titulo}
+                  </h3>
                 </div>
 
                 <div className="linha-tags-tarefa">
-                  <span className="tag-disciplina">{tarefa.disciplinaNome}</span>
+                  <span className="tag-disciplina">{tarefa.nomeDisciplina}</span>
                   <span className={`tag-status tag-status-${tarefa.status.toLowerCase()}`}>
                     {LABEL_STATUS[tarefa.status]}
                   </span>
                   {tarefa.atrasada && (
-                    <span className="tag-prioridade tag-prioridade-alta">
-                      Atrasada
-                    </span>
+                    <>
+                      <span className="tag-prioridade tag-prioridade-alta">Atrasada</span>
+                      <span className="tag-prioridade tag-prioridade-alta">Prioridade Alta</span>
+                    </>
                   )}
-                  {tarefa.prioridade && (
+                  {!tarefa.atrasada && tarefa.prioridade && (
                     <span className={`tag-prioridade tag-prioridade-${tarefa.prioridade.toLowerCase()}`}>
                       Prioridade {LABEL_PRIORIDADE[tarefa.prioridade]}
                     </span>
@@ -518,7 +422,7 @@ export function TelaTarefas() {
                 <button
                   type="button"
                   className="botao-acao editar"
-                  onClick={() => abrirModalEdicao(tarefa.id)}
+                  onClick={() => abrirModalEdicao(tarefa)}
                   aria-label={`Editar tarefa ${tarefa.titulo}`}
                   title="Editar tarefa"
                 >
@@ -527,7 +431,7 @@ export function TelaTarefas() {
                 <button
                   type="button"
                   className="botao-acao excluir"
-                  onClick={() => handleExcluirTarefa(tarefa.id)}
+                  onClick={() => handleExcluirTarefa(tarefa)}
                   aria-label={`Excluir tarefa ${tarefa.titulo}`}
                   title="Excluir tarefa"
                 >
@@ -539,15 +443,17 @@ export function TelaTarefas() {
         )}
       </section>
 
+      {/* Paginação */}
       <div className="paginacao-area">
         <PaginacaoNumerada
-          paginaAtual={paginaAtualTarefas}
-          totalPaginas={totalPaginasTarefas}
-          onChange={setPaginaAtualTarefas}
+          paginaAtual={paginaAtual}
+          totalPaginas={totalPaginas}
+          onChange={setPaginaAtual}
           ariaLabel="Paginacao de tarefas"
         />
       </div>
 
+      {/* Modal de criar/editar tarefa */}
       {modalAberto && (
         <div className="fundo-modal" role="presentation" onClick={fecharModal}>
           <section
@@ -555,7 +461,7 @@ export function TelaTarefas() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="titulo-modal-tarefa"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <header className="topo-modal">
               <h2 id="titulo-modal-tarefa">{tarefaEmEdicaoId ? 'Editar Tarefa' : 'Nova Tarefa'}</h2>
@@ -565,6 +471,20 @@ export function TelaTarefas() {
             </header>
 
             <form className="formulario-tarefa" onSubmit={handleSalvarTarefa}>
+              {mensagemErroModal && (
+                <div style={{
+                  color: 'var(--cor-perigo)',
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  padding: '10px',
+                  borderRadius: '6px',
+                  marginBottom: '10px',
+                  fontSize: '0.9rem',
+                  border: '1px solid var(--cor-perigo)',
+                }}>
+                  {mensagemErroModal}
+                </div>
+              )}
+
               <label htmlFor="disciplinaId">
                 Disciplina *
                 <select
@@ -575,9 +495,9 @@ export function TelaTarefas() {
                   required
                 >
                   <option value="">Selecione uma disciplina</option>
-                  {DISCIPLINAS_MOCK.map((disciplina) => (
-                    <option key={disciplina.id} value={disciplina.id}>
-                      {disciplina.nome}
+                  {disciplinas.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.nome}
                     </option>
                   ))}
                 </select>
@@ -642,6 +562,38 @@ export function TelaTarefas() {
               </footer>
             </form>
           </section>
+        </div>
+      )}
+
+      {/* Modal de confirmação de exclusão */}
+      {modalExclusaoAberto && (
+        <div className="fundo-modal-perfil">
+          <div className="modal-perfil">
+            <h2>Excluir Tarefa</h2>
+            <p>
+              Tem certeza que deseja excluir a tarefa <strong>"{tarefaExclusao?.titulo}"</strong>?
+              <br /><br />
+              <span style={{ color: 'var(--cor-perigo)' }}>
+                Esta ação não poderá ser desfeita.
+              </span>
+            </p>
+            <div className="rodape-modal-perfil">
+              <button
+                type="button"
+                className="botao-modal-cancelar"
+                onClick={() => setModalExclusaoAberto(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="botao-modal-confirmar"
+                onClick={confirmarExclusao}
+              >
+                Sim, Excluir
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

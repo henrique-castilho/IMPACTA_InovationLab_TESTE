@@ -29,6 +29,13 @@ public interface TarefaRepository extends JpaRepository<Tarefa, Long> {
 
     long countByDisciplinaUsuarioAndStatus(Usuario usuario, StatusTarefa status);
 
+    // Tarefas atrasadas (status != CONCLUIDA E dataEntrega < hoje)
+    @Query("SELECT t FROM Tarefa t WHERE t.disciplina.usuario = :usuario AND t.status <> com.api.edutrack.enums.StatusTarefa.CONCLUIDA AND t.dataEntrega < :hoje")
+    Page<Tarefa> findAtrasadasByUsuario(@Param("usuario") Usuario usuario, @Param("hoje") java.time.LocalDate hoje, Pageable pageable);
+
+    @Query("SELECT t FROM Tarefa t WHERE t.disciplina.usuario = :usuario AND t.disciplina.id = :disciplinaId AND t.status <> com.api.edutrack.enums.StatusTarefa.CONCLUIDA AND t.dataEntrega < :hoje")
+    Page<Tarefa> findAtrasadasByUsuarioAndDisciplinaId(@Param("usuario") Usuario usuario, @Param("disciplinaId") Long disciplinaId, @Param("hoje") java.time.LocalDate hoje, Pageable pageable);
+
     // Dashboard queries
     @Query("SELECT COUNT(t) FROM Tarefa t WHERE t.disciplina.usuario = :usuario AND t.status = 'CONCLUIDA'")
     long countTarefasConcluidas(@Param("usuario") Usuario usuario);

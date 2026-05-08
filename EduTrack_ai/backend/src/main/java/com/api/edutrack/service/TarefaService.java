@@ -32,10 +32,18 @@ public class TarefaService {
     private TarefaRepository tarefaRepository;
 
     @Autowired
-    private DisciplinaRepository disciplinaRepository; // injection as requested
-
+    private DisciplinaRepository disciplinaRepository;
     @Transactional(readOnly = true)
-    public Page<TarefaResponseDTO> listarTarefas(Usuario usuario, Long disciplinaId, StatusTarefa status, Pageable pageable) {
+    public Page<TarefaResponseDTO> listarTarefas(Usuario usuario, Long disciplinaId, StatusTarefa status, boolean atrasadas, Pageable pageable) {
+        LocalDate hoje = LocalDate.now();
+
+        if (atrasadas) {
+            Page<Tarefa> pagina = disciplinaId != null
+                ? tarefaRepository.findAtrasadasByUsuarioAndDisciplinaId(usuario, disciplinaId, hoje, pageable)
+                : tarefaRepository.findAtrasadasByUsuario(usuario, hoje, pageable);
+            return pagina.map(this::toDTO);
+        }
+
         List<Tarefa> tarefas;
         if (disciplinaId != null && status != null) {
             tarefas = tarefaRepository.findByDisciplinaUsuarioAndDisciplinaIdAndStatus(usuario, disciplinaId, status, Pageable.unpaged()).getContent();
@@ -47,19 +55,16 @@ public class TarefaService {
             tarefas = tarefaRepository.findByDisciplinaUsuario(usuario, Pageable.unpaged()).getContent();
         }
 
-        // Ordenar por prioridade (alta, média, baixa, atrasada) e dataEntrega ascendente
         List<TarefaResponseDTO> dtos = tarefas.stream()
             .map(this::toDTO)
             .sorted((a, b) -> {
                 int ordemA = prioridadeOrdem(a.getPrioridade());
                 int ordemB = prioridadeOrdem(b.getPrioridade());
                 if (ordemA != ordemB) return Integer.compare(ordemA, ordemB);
-                // Se mesma prioridade, ordenar por dataEntrega asc
                 return a.getDataEntrega().compareTo(b.getDataEntrega());
             })
             .collect(Collectors.toList());
 
-        // Paginar manualmente
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), dtos.size());
         List<TarefaResponseDTO> pageContent = start > end ? List.of() : dtos.subList(start, end);
@@ -67,21 +72,14 @@ public class TarefaService {
     }
 
     private int prioridadeOrdem(String prioridade) {
-        if (prioridade == null) return 4;
+        if (prioridade == null) return 4; // CONCLUIDA (sem prioridade) vai por último
         return switch (prioridade) {
-            case "ALTA" -> 0;
-            case "MEDIA" -> 1;
-            case "BAIXA" -> 2;
-            case "ATRASADA" -> 3;
-            default -> 4;
+            case "ATRASADA" -> 0; // primeiro: atrasadas
+            case "ALTA"     -> 1; // segundo: próximas do prazo (< 2 dias)
+            case "MEDIA"    -> 2; // terceiro: prazo em até 7 dias
+            case "BAIXA"    -> 3; // quarto: prazo confortável
+            default         -> 4;
         };
-    }
-
-    @Transactional(readOnly = true)
-    public TarefaResponseDTO buscarPorId(Usuario usuario, Long id) {
-        Tarefa t = tarefaRepository.findByIdAndDisciplinaUsuario(id, usuario)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tarefa nao encontrada"));
-        return toDTO(t);
     }
 
     @Transactional
