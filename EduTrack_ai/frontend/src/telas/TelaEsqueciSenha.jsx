@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
+import api from '../services/api'
 import './TelaEsqueciSenha.css'
 
 export function TelaEsqueciSenha() {
@@ -9,7 +10,8 @@ export function TelaEsqueciSenha() {
   const [codigoVerificacao, setCodigoVerificacao] = useState('')
   const [novaSenha, setNovaSenha] = useState('')
   const [confirmarNovaSenha, setConfirmarNovaSenha] = useState('')
-  const [mensagemErroSenha, setMensagemErroSenha] = useState('')
+  const [mensagemErro, setMensagemErro] = useState('')
+  const [carregando, setCarregando] = useState(false)
   const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
   const [mostrarConfirmacaoSenha, setMostrarConfirmacaoSenha] = useState(false)
   const navigate = useNavigate()
@@ -26,27 +28,73 @@ export function TelaEsqueciSenha() {
     return () => window.clearTimeout(temporizador)
   }, [etapa, navigate])
 
-  function enviarCodigo(evento) {
-    evento.preventDefault()
-    setCodigoVerificacao('')
-    setEtapa(2)
+  async function enviarCodigo(evento) {
+    if (evento) evento.preventDefault()
+    setCarregando(true)
+    setMensagemErro('')
+
+    try {
+      const resposta = await api.post('/auth/esqueci-senha', { email })
+      // Como nao usamos SendGrid, o backend retorna o codigo no JSON
+      const codigo = resposta.data.codigo || resposta.data // Dependendo de como o Map e retornado
+      
+      alert(`[TESTE] Seu codigo de verificacao e: ${codigo}`)
+      setCodigoVerificacao('')
+      setEtapa(2)
+    } catch (err) {
+      const msg = err.response?.data?.mensagem || 'Erro ao enviar codigo. Verifique o email.'
+      setMensagemErro(msg)
+    } finally {
+      setCarregando(false)
+    }
   }
 
-  function verificarCodigo(evento) {
+  async function verificarCodigo(evento) {
     evento.preventDefault()
-    setEtapa(3)
+    setCarregando(true)
+    setMensagemErro('')
+
+    try {
+      await api.post('/auth/verificar-codigo', { 
+        email, 
+        codigo: codigoVerificacao 
+      })
+      setEtapa(3)
+    } catch (err) {
+      const msg = err.response?.data?.mensagem || 'Codigo invalido ou expirado.'
+      setMensagemErro(msg)
+    } finally {
+      setCarregando(false)
+    }
   }
 
-  function redefinirSenha(evento) {
+  async function redefinirSenha(evento) {
     evento.preventDefault()
 
     if (novaSenha !== confirmarNovaSenha) {
-      setMensagemErroSenha('As senhas nao conferem. Digite a mesma senha nos dois campos.')
+      setMensagemErro('As senhas nao conferem. Digite a mesma senha nos dois campos.')
       return
     }
 
-    setMensagemErroSenha('')
-    setEtapa(4)
+    setCarregando(true)
+    setMensagemErro('')
+
+    try {
+      await api.post('/auth/reseta-senha', {
+        email,
+        codigo: codigoVerificacao,
+        novaSenha,
+        confirmarSenha: confirmarNovaSenha
+      })
+      setEtapa(4)
+    } catch (err) {
+      const msg = err.response?.data?.detalhes 
+        ? Object.values(err.response.data.detalhes)[0]
+        : err.response?.data?.mensagem || 'Erro ao redefinir senha.'
+      setMensagemErro(msg)
+    } finally {
+      setCarregando(false)
+    }
   }
 
   function renderizarEtapa() {
@@ -55,6 +103,8 @@ export function TelaEsqueciSenha() {
         <form key="etapa-1" onSubmit={enviarCodigo} className="form-etapa">
           <h2>Recuperar Senha</h2>
           <p>Digite o email associado a sua conta para receber um codigo de verificacao.</p>
+
+          {mensagemErro && <p className="mensagem-erro-login" style={{ marginBottom: '1rem' }}>{mensagemErro}</p>}
 
           <label htmlFor="email-recuperacao">Email</label>
           <input
@@ -66,7 +116,9 @@ export function TelaEsqueciSenha() {
             required
           />
 
-          <button type="submit" className="botao-primario">Enviar Codigo</button>
+          <button type="submit" className="botao-primario" disabled={carregando}>
+            {carregando ? 'Enviando...' : 'Enviar Codigo'}
+          </button>
           <Link to="/login" className="botao-secundario">Cancelar</Link>
         </form>
       )
@@ -81,7 +133,9 @@ export function TelaEsqueciSenha() {
               Voltar
             </button>
           </div>
-          <p>Digite o codigo de 6 digitos enviado para {email || 'seu email'}.</p>
+          <p>Digite o codigo de 6 digitos enviado para {email}.</p>
+
+          {mensagemErro && <p className="mensagem-erro-login" style={{ marginBottom: '1rem' }}>{mensagemErro}</p>}
 
           <label htmlFor="codigo-verificacao">Codigo de Verificacao</label>
           <input
@@ -100,8 +154,10 @@ export function TelaEsqueciSenha() {
             required
           />
 
-          <button type="submit" className="botao-primario">Verificar Codigo</button>
-          <button type="button" className="link-acao" onClick={() => setEtapa(2)}>
+          <button type="submit" className="botao-primario" disabled={carregando}>
+            {carregando ? 'Verificando...' : 'Verificar Codigo'}
+          </button>
+          <button type="button" className="link-acao" onClick={enviarCodigo} disabled={carregando}>
             Reenviar codigo
           </button>
         </form>
@@ -119,6 +175,8 @@ export function TelaEsqueciSenha() {
           </div>
           <p>Defina uma nova senha para sua conta.</p>
 
+          {mensagemErro && <p className="mensagem-erro-login" style={{ marginBottom: '1rem' }}>{mensagemErro}</p>}
+
           <label htmlFor="nova-senha">Nova Senha</label>
           <div className="campo-senha-recuperacao">
             <input
@@ -126,13 +184,9 @@ export function TelaEsqueciSenha() {
               type={mostrarNovaSenha ? 'text' : 'password'}
               placeholder="••••••"
               value={novaSenha}
-              onChange={(evento) => {
-                setNovaSenha(evento.target.value)
-                if (mensagemErroSenha) {
-                  setMensagemErroSenha('')
-                }
-              }}
+              onChange={(evento) => setNovaSenha(evento.target.value)}
               required
+              minLength={6}
             />
             <button
               type="button"
@@ -151,13 +205,9 @@ export function TelaEsqueciSenha() {
               type={mostrarConfirmacaoSenha ? 'text' : 'password'}
               placeholder="••••••"
               value={confirmarNovaSenha}
-              onChange={(evento) => {
-                setConfirmarNovaSenha(evento.target.value)
-                if (mensagemErroSenha) {
-                  setMensagemErroSenha('')
-                }
-              }}
+              onChange={(evento) => setConfirmarNovaSenha(evento.target.value)}
               required
+              minLength={6}
             />
             <button
               type="button"
@@ -169,11 +219,9 @@ export function TelaEsqueciSenha() {
             </button>
           </div>
 
-          {mensagemErroSenha && (
-            <p className="mensagem-erro" role="alert">{mensagemErroSenha}</p>
-          )}
-
-          <button type="submit" className="botao-primario">Definir Nova Senha</button>
+          <button type="submit" className="botao-primario" disabled={carregando}>
+            {carregando ? 'Redefinindo...' : 'Definir Nova Senha'}
+          </button>
         </form>
       )
     }

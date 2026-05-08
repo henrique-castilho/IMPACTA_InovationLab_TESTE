@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private static final long TEMPO_EXPIRACAO_CODIGO_MINUTOS = 10;
+    private static final long TEMPO_EXPIRACAO_CODIGO_MINUTOS = 5;
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
