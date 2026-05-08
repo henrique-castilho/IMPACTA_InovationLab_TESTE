@@ -239,13 +239,19 @@ export function TelaTarefas() {
   })
 
   const tarefasEnriquecidas = useMemo(() => {
+    const hoje = inicioDoDia()
+    
     return tarefas.map((tarefa) => {
       const prioridade = calcularPrioridade(tarefa.dataEntrega, tarefa.status)
       const disciplina = DISCIPLINAS_MOCK.find((item) => item.id === tarefa.disciplinaId)
+      
+      const entrega = inicioDoDia(new Date(`${tarefa.dataEntrega}T00:00:00`))
+      const atrasada = tarefa.status !== 'CONCLUIDA' && entrega < hoje
 
       return {
         ...tarefa,
         prioridade,
+        atrasada,
         disciplinaNome: disciplina?.nome ?? 'Disciplina desconhecida',
       }
     })
@@ -484,6 +490,11 @@ export function TelaTarefas() {
                   <span className={`tag-status tag-status-${tarefa.status.toLowerCase()}`}>
                     {LABEL_STATUS[tarefa.status]}
                   </span>
+                  {tarefa.atrasada && (
+                    <span className="tag-prioridade tag-prioridade-alta">
+                      Atrasada
+                    </span>
+                  )}
                   {tarefa.prioridade && (
                     <span className={`tag-prioridade tag-prioridade-${tarefa.prioridade.toLowerCase()}`}>
                       Prioridade {LABEL_PRIORIDADE[tarefa.prioridade]}

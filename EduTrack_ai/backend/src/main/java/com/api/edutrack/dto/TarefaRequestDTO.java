@@ -2,6 +2,8 @@ package com.api.edutrack.dto;
 
 import java.time.LocalDate;
 
+import com.api.edutrack.enums.StatusTarefa;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -26,5 +28,5 @@ public class TarefaRequestDTO {
     private LocalDate dataEntrega;
 
     @NotNull(message = "Status e obrigatorio")
-    private com.api.edutrack.enums.StatusTarefa status;
+    private StatusTarefa status;
 }
