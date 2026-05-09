@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
 import { ToggleTema } from '../componentes/ToggleTema'
-import api, { CHAVE_TOKEN } from '../services/api'
+import api, { CHAVE_TOKEN, CHAVE_USER_ID } from '../services/api'
 import './TelaLogin.css'
 
 export function TelaLogin() {
@@ -12,6 +12,13 @@ export function TelaLogin() {
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState('')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const token = window.localStorage.getItem(CHAVE_TOKEN)
+    if (token) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [navigate])
 
   async function lidarComLogin(evento) {
     evento.preventDefault()
@@ -27,6 +34,7 @@ export function TelaLogin() {
       
       if (dados.token) {
         window.localStorage.setItem(CHAVE_TOKEN, dados.token)
+        window.localStorage.setItem(CHAVE_USER_ID, dados.userId)
         navigate('/dashboard')
       } else {
         throw new Error('Token nao recebido do servidor.')

@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import { CHAVE_TEMA, aplicarTema } from './componentes/ToggleTema'
@@ -11,6 +11,7 @@ import { TelaInsights } from './telas/TelaInsights'
 import { TelaLogin } from './telas/TelaLogin'
 import { TelaPerfil } from './telas/TelaPerfil'
 import { TelaTarefas } from './telas/TelaTarefas'
+import { CHAVE_TOKEN } from './services/api'
 
 import { RotaProtegida } from './componentes/RotaProtegida'
 
@@ -24,6 +25,16 @@ function App() {
     } catch {
       // Ignora erros de armazenamento e mantém o tema padrao.
     }
+  }, [])
+
+  useEffect(() => {
+    const escutarSaida = (event) => {
+      if (event.key === CHAVE_TOKEN && !event.newValue) {
+        window.location.href = '/login'
+      }
+    }
+    window.addEventListener('storage', escutarSaida)
+    return () => window.removeEventListener('storage', escutarSaida)
   }, [])
 
   return (

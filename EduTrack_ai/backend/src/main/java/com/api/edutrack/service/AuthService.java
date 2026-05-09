@@ -53,7 +53,7 @@ public class AuthService {
         Usuario salvo = usuarioRepository.save(usuario);
         String token = jwtUtil.gerarToken(salvo.getEmail());
 
-        return new AuthResponseDTO(token, "Bearer");
+        return new AuthResponseDTO(token, "Bearer", salvo.getId());
     }
 
     public AuthResponseDTO login(AuthLoginRequestDTO request) {
@@ -65,7 +65,7 @@ public class AuthService {
         }
 
         String token = jwtUtil.gerarToken(usuario.getEmail());
-        return new AuthResponseDTO(token, "Bearer");
+        return new AuthResponseDTO(token, "Bearer", usuario.getId());
     }
 
     public String gerarCodigoRecuperacao(EsqueciSenhaDTO request) {

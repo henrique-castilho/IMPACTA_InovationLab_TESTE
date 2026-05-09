@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api, { CHAVE_TOKEN } from '../services/api'
+import api, { CHAVE_TOKEN, CHAVE_USER_ID } from '../services/api'
 import './TelaPerfil.css'
 
 export function TelaPerfil() {
@@ -101,7 +101,11 @@ export function TelaPerfil() {
     setExibirModalSucesso(false)
     // Se a mensagem contem "login novamente", desloga o usuario
     if (mensagemSucesso.includes('login novamente')) {
+      const userId = window.localStorage.getItem(CHAVE_USER_ID)
       window.localStorage.removeItem(CHAVE_TOKEN)
+      window.localStorage.removeItem(CHAVE_USER_ID)
+      window.localStorage.removeItem(`edutrack.insights_${userId}`)
+      window.localStorage.removeItem(`edutrack.insights_resumo_${userId}`)
       navigate('/login')
     }
   }
@@ -110,7 +114,11 @@ export function TelaPerfil() {
     try {
       setExcluindo(true)
       await api.delete('/users/me')
+      const userId = window.localStorage.getItem(CHAVE_USER_ID)
       window.localStorage.removeItem(CHAVE_TOKEN)
+      window.localStorage.removeItem(CHAVE_USER_ID)
+      window.localStorage.removeItem(`edutrack.insights_${userId}`)
+      window.localStorage.removeItem(`edutrack.insights_resumo_${userId}`)
       navigate('/cadastro')
     } catch (err) {
       setExibirModalExclusao(false)

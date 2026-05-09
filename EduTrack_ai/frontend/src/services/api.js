@@ -1,6 +1,7 @@
 import axios from 'axios'
 
 export const CHAVE_TOKEN = 'edutrack-token'
+export const CHAVE_USER_ID = 'edutrack-user-id'
 
 const api = axios.create({
   baseURL: 'http://localhost:8080',
@@ -29,10 +30,12 @@ api.interceptors.response.use(
   (resposta) => resposta,
   (erro) => {
     if (erro.response && erro.response.status === 401) {
-      // Se o token expirou ou é inválido, podemos limpar o localStorage
-      // e redirecionar para o login (opcional, dependendo do fluxo desejado)
+      const userId = window.localStorage.getItem(CHAVE_USER_ID)
       window.localStorage.removeItem(CHAVE_TOKEN)
-      // window.location.href = '/login'
+      window.localStorage.removeItem(CHAVE_USER_ID)
+      window.localStorage.removeItem(`edutrack.insights_${userId}`)
+      window.localStorage.removeItem(`edutrack.insights_resumo_${userId}`)
+      window.location.href = '/login'
     }
     return Promise.reject(erro)
   }

@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
 import { ToggleTema } from '../componentes/ToggleTema'
-import api, { CHAVE_TOKEN } from '../services/api'
+import api, { CHAVE_TOKEN, CHAVE_USER_ID } from '../services/api'
 import './TelaCadastro.css'
 
 export function TelaCadastro() {
@@ -14,6 +14,13 @@ export function TelaCadastro() {
   const [erro, setErro] = useState('')
   const navigate = useNavigate()
 
+  useEffect(() => {
+    const token = window.localStorage.getItem(CHAVE_TOKEN)
+    if (token) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [navigate])
+
   async function lidarComCadastro(evento) {
     evento.preventDefault()
     setCarregando(true)
@@ -22,9 +29,10 @@ export function TelaCadastro() {
     try {
       const resposta = await api.post('/auth/cadastro', { nome, email, senha })
       
-      // Salva o token retornado para logar automaticamente
-      const { token } = resposta.data
+      // Salva o token e o ID retornado para logar automaticamente
+      const { token, userId } = resposta.data
       window.localStorage.setItem(CHAVE_TOKEN, token)
+      window.localStorage.setItem(CHAVE_USER_ID, userId)
       
       // Redireciona para o dashboard
       navigate('/dashboard')

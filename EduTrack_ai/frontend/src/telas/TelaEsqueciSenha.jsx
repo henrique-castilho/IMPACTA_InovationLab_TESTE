@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
-import api from '../services/api'
+import api, { CHAVE_TOKEN } from '../services/api'
 import './TelaEsqueciSenha.css'
 
 export function TelaEsqueciSenha() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const token = window.localStorage.getItem(CHAVE_TOKEN)
+    if (token) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [navigate])
+
   const [etapa, setEtapa] = useState(1)
   const [email, setEmail] = useState('')
   const [codigoVerificacao, setCodigoVerificacao] = useState('')
@@ -14,7 +23,6 @@ export function TelaEsqueciSenha() {
   const [carregando, setCarregando] = useState(false)
   const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
   const [mostrarConfirmacaoSenha, setMostrarConfirmacaoSenha] = useState(false)
-  const navigate = useNavigate()
 
   useEffect(() => {
     if (etapa !== 4) {
