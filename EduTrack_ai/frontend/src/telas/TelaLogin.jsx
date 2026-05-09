@@ -2,19 +2,20 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
 import { ToggleTema } from '../componentes/ToggleTema'
-import api, { CHAVE_TOKEN, CHAVE_USER_ID } from '../services/api'
+import api, { CHAVE_TOKEN, CHAVE_USER_ID, obterToken } from '../services/api'
 import './TelaLogin.css'
 
 export function TelaLogin() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
+  const [lembrar, setLembrar] = useState(false)
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
-    const token = window.localStorage.getItem(CHAVE_TOKEN)
+    const token = obterToken()
     if (token) {
       navigate('/dashboard', { replace: true })
     }
@@ -27,14 +28,12 @@ export function TelaLogin() {
 
     try {
       const resposta = await api.post('/auth/login', { email, senha })
-
-      // O Axios já lida com status de erro lançando exceção,
-      // e os dados vêm em resposta.data
       const dados = resposta.data
       
       if (dados.token) {
-        window.localStorage.setItem(CHAVE_TOKEN, dados.token)
-        window.localStorage.setItem(CHAVE_USER_ID, dados.userId)
+        const storage = lembrar ? window.localStorage : window.sessionStorage
+        storage.setItem(CHAVE_TOKEN, dados.token)
+        storage.setItem(CHAVE_USER_ID, dados.userId)
         navigate('/dashboard')
       } else {
         throw new Error('Token nao recebido do servidor.')
@@ -105,7 +104,12 @@ export function TelaLogin() {
 
             <div className="linha-opcoes">
               <label className="checkbox-opcao" htmlFor="lembrar-login">
-                <input id="lembrar-login" type="checkbox" />
+                <input 
+                  id="lembrar-login" 
+                  type="checkbox" 
+                  checked={lembrar}
+                  onChange={(e) => setLembrar(e.target.checked)}
+                />
                 Lembrar de mim
               </label>
               <Link to="/esqueci-senha">Esqueceu a senha?</Link>

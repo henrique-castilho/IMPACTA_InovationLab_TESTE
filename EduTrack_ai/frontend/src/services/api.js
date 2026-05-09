@@ -3,6 +3,32 @@ import axios from 'axios'
 export const CHAVE_TOKEN = 'edutrack-token'
 export const CHAVE_USER_ID = 'edutrack-user-id'
 
+// Função auxiliar para buscar o token em qualquer um dos storages
+export const obterToken = () => {
+  return window.localStorage.getItem(CHAVE_TOKEN) || window.sessionStorage.getItem(CHAVE_TOKEN)
+}
+
+// Função auxiliar para buscar o ID do usuário em qualquer um dos storages
+export const obterUserId = () => {
+  return window.localStorage.getItem(CHAVE_USER_ID) || window.sessionStorage.getItem(CHAVE_USER_ID)
+}
+
+// Função para limpar todos os dados de sessão
+export const limparSessao = () => {
+  const userId = obterUserId()
+  const chavesParaLimpar = [
+    CHAVE_TOKEN,
+    CHAVE_USER_ID,
+    `edutrack.insights_${userId}`,
+    `edutrack.insights_resumo_${userId}`
+  ]
+  
+  chavesParaLimpar.forEach(chave => {
+    window.localStorage.removeItem(chave)
+    window.sessionStorage.removeItem(chave)
+  })
+}
+
 const api = axios.create({
   baseURL: 'http://localhost:8080',
 })
@@ -10,10 +36,8 @@ const api = axios.create({
 // Interceptador para adicionar o token JWT em todas as requisições
 api.interceptors.request.use(
   (config) => {
-    const token = window.localStorage.getItem(CHAVE_TOKEN)
+    const token = obterToken()
     
-    // Se o token existe, adicionamos ao cabeçalho Authorization
-    // O backend Spring Boot espera o formato "Bearer <token>"
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -30,11 +54,7 @@ api.interceptors.response.use(
   (resposta) => resposta,
   (erro) => {
     if (erro.response && erro.response.status === 401) {
-      const userId = window.localStorage.getItem(CHAVE_USER_ID)
-      window.localStorage.removeItem(CHAVE_TOKEN)
-      window.localStorage.removeItem(CHAVE_USER_ID)
-      window.localStorage.removeItem(`edutrack.insights_${userId}`)
-      window.localStorage.removeItem(`edutrack.insights_resumo_${userId}`)
+      limparSessao()
       window.location.href = '/login'
     }
     return Promise.reject(erro)

@@ -1,17 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { ToggleTema } from './ToggleTema'
-import { CHAVE_TOKEN, CHAVE_USER_ID } from '../services/api'
+import { limparSessao } from '../services/api'
 import './NavbarPrincipal.css'
 
 export function NavbarPrincipal({ nomeUsuario }) {
   const navigate = useNavigate()
 
   function handleSair() {
-    const userId = window.localStorage.getItem(CHAVE_USER_ID)
-    window.localStorage.removeItem(CHAVE_TOKEN)
-    window.localStorage.removeItem(CHAVE_USER_ID)
-    window.localStorage.removeItem(`edutrack.insights_${userId}`)
-    window.localStorage.removeItem(`edutrack.insights_resumo_${userId}`)
+    limparSessao()
     navigate('/login')
   }
 

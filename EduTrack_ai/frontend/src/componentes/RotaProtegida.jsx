@@ -1,9 +1,9 @@
 import { Navigate, useLocation } from 'react-router-dom'
-import { CHAVE_TOKEN } from '../services/api'
+import { obterToken } from '../services/api'
 
 export function RotaProtegida({ children }) {
   const location = useLocation()
-  const token = window.localStorage.getItem(CHAVE_TOKEN)
+  const token = obterToken()
 
   if (!token) {
     // Se nao houver token, redireciona para o login
