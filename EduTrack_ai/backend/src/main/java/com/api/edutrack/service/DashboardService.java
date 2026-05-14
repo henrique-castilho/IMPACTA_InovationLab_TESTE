@@ -75,6 +75,8 @@ public class DashboardService {
         Page<Disciplina> disciplinas = disciplinaRepository.findByUsuario(usuario, Pageable.unpaged());
         return disciplinas.getContent().stream()
                 .map(this::convertToTarefaPorStatusDTO)
+                .sorted((a, b) -> Long.compare(b.getTotalTarefas(), a.getTotalTarefas()))
+                .limit(10)
                 .collect(Collectors.toList());
     }
 

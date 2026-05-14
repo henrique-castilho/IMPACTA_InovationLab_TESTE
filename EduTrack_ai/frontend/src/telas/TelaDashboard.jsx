@@ -11,227 +11,26 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import api from '../services/api'
 import './TelaDashboard.css'
 
 const CORES_GRAFICO = ['#4f46e5', '#0ea5a3', '#f59e0b', '#22c55e', '#7c3aed']
 const ITENS_POR_PAGINA_DISCIPLINAS = 6
 const ITENS_POR_PAGINA_TAREFAS = 4
-const ORDEM_PRIORIDADE = {
-  ATRASADA: 0,
-  ALTA: 1,
-  MEDIA: 2,
-  BAIXA: 3,
+
+function gerarCorPorString(str) {
+  if (!str) return '#4f46e5'
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const h = Math.abs(hash) % 360
+  // Usamos hsl para garantir que a cor seja sempre vibrante, mudando apenas a matiz (hue)
+  return `hsl(${h}, 75%, 55%)`
 }
-
-const DISCIPLINAS_INICIAIS = [
-  {
-    id: 1,
-    nome: 'Algoritmos e Programacao',
-    professor: 'Prof. Carlos Silva',
-    cargaHoraria: 42,
-    descricao: 'Fundamentos de logica, estruturas de controle e resolucao de problemas.',
-    dataInicio: '2026-02-03',
-    dataFim: '2026-06-28',
-    tarefasConcluidas: 12,
-    tarefasTotais: 17,
-  },
-  {
-    id: 2,
-    nome: 'Banco de Dados',
-    professor: 'Profa. Ana Santos',
-    cargaHoraria: 30,
-    descricao: 'Modelagem relacional, SQL e normalizacao aplicada ao projeto.',
-    dataInicio: '2026-02-05',
-    dataFim: '2026-06-25',
-    tarefasConcluidas: 5,
-    tarefasTotais: 10,
-  },
-  {
-    id: 3,
-    nome: 'Desenvolvimento Web',
-    professor: 'Prof. Ricardo Lima',
-    cargaHoraria: 38,
-    descricao: 'Interfaces web modernas com foco em experiencia do usuario.',
-    dataInicio: '2026-02-10',
-    dataFim: '2026-06-30',
-    tarefasConcluidas: 11,
-    tarefasTotais: 13,
-  },
-  {
-    id: 4,
-    nome: 'Engenharia de Software',
-    professor: 'Profa. Maria Costa',
-    cargaHoraria: 48,
-    descricao: 'Metodos ageis, requisitos e qualidade de software em equipes.',
-    dataInicio: '2026-02-01',
-    dataFim: '2026-07-05',
-    tarefasConcluidas: 7,
-    tarefasTotais: 15,
-  },
-  {
-    id: 5,
-    nome: 'Inteligencia Artificial',
-    professor: 'Prof. Roberto Almeida',
-    cargaHoraria: 36,
-    descricao: 'Introducao a modelos de IA, classificacao e regressao.',
-    dataInicio: '2026-02-12',
-    dataFim: '2026-07-01',
-    tarefasConcluidas: 4,
-    tarefasTotais: 9,
-  },
-  {
-    id: 6,
-    nome: 'Arquitetura de Computadores',
-    professor: 'Profa. Daniela Rocha',
-    cargaHoraria: 32,
-    descricao: 'Organizacao de hardware, processadores e memoria.',
-    dataInicio: '2026-02-08',
-    dataFim: '2026-06-29',
-    tarefasConcluidas: 6,
-    tarefasTotais: 11,
-  },
-  {
-    id: 7,
-    nome: 'Seguranca da Informacao',
-    professor: 'Prof. Marcos Ferreira',
-    cargaHoraria: 28,
-    descricao: 'Principios de seguranca, ameacas e boas praticas.',
-    dataInicio: '2026-02-14',
-    dataFim: '2026-06-27',
-    tarefasConcluidas: 3,
-    tarefasTotais: 8,
-  },
-]
-
-const TAREFAS_MOCK = [
-  {
-    id: 1,
-    titulo: 'Entregar projeto de API',
-    disciplinaId: 4,
-    disciplina: 'Engenharia de Software',
-    status: 'PENDENTE',
-    diasParaEntrega: 1,
-  },
-  {
-    id: 2,
-    titulo: 'Preparar apresentacao de sprint',
-    disciplinaId: 4,
-    disciplina: 'Engenharia de Software',
-    status: 'PENDENTE',
-    diasParaEntrega: 0,
-  },
-  {
-    id: 3,
-    titulo: 'Lista SQL - Joins e Views',
-    disciplinaId: 2,
-    disciplina: 'Banco de Dados',
-    status: 'PENDENTE',
-    diasParaEntrega: 3,
-  },
-  {
-    id: 4,
-    titulo: 'Refatorar validacoes do formulario',
-    disciplinaId: 3,
-    disciplina: 'Desenvolvimento Web',
-    status: 'PENDENTE',
-    diasParaEntrega: 4,
-  },
-  {
-    id: 5,
-    titulo: 'Checkpoint de algoritmos recursivos',
-    disciplinaId: 1,
-    disciplina: 'Algoritmos e Programacao',
-    status: 'PENDENTE',
-    diasParaEntrega: 6,
-  },
-  {
-    id: 6,
-    titulo: 'Exercicio de classificacao supervisionada',
-    disciplinaId: 5,
-    disciplina: 'Inteligencia Artificial',
-    status: 'PENDENTE',
-    diasParaEntrega: 5,
-  },
-  {
-    id: 7,
-    titulo: 'Resumo sobre memoria cache',
-    disciplinaId: 6,
-    disciplina: 'Arquitetura de Computadores',
-    status: 'PENDENTE',
-    diasParaEntrega: -2, // exemplo: atrasada (vencida ha 2 dias)
-  },
-  {
-    id: 8,
-    titulo: 'Exercicio opcional - leitura',
-    disciplinaId: 1,
-    disciplina: 'Algoritmos e Programacao',
-    status: 'PENDENTE',
-    diasParaEntrega: 15, // exemplo: baixa prioridade (verde)
-  },
-]
 
 function formatarHoras(totalHoras) {
   return `${totalHoras}h`
-}
-
-function criarDataEmDias(dias) {
-  const data = new Date()
-  data.setHours(0, 0, 0, 0)
-  data.setDate(data.getDate() + dias)
-  return data
-}
-
-function calcularPrioridade(dataEntrega, status) {
-  if (status === 'CONCLUIDA') {
-    return null
-  }
-
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-  const diffMs = dataEntrega.getTime() - hoje.getTime()
-  const diasParaEntrega = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diasParaEntrega < 0) {
-    return 'ATRASADA'
-  }
-
-  if (diasParaEntrega < 2) {
-    return 'ALTA'
-  }
-
-  if (diasParaEntrega <= 7) {
-    return 'MEDIA'
-  }
-
-  return 'BAIXA'
-}
-
-function formatarPrazo(dataEntrega) {
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-  const diffMs = dataEntrega.getTime() - hoje.getTime()
-  const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  if (dias < 0) {
-    const vencidos = Math.abs(dias)
-    return `Venceu há ${vencidos} ${vencidos === 1 ? 'dia' : 'dias'}`
-  }
-
-  if (dias === 0) {
-    return 'Hoje'
-  }
-
-  if (dias === 1) {
-    return 'Amanhã'
-  }
-
-  return `${dias} dias`
-}
-
-function aplicarPaginacaoTemporaria(lista, paginaAtual, itensPorPagina) {
-  // Temporario: enquanto o backend paginado nao esta pronto, o recorte e feito no frontend.
-  // Quando a API estiver disponivel, este slice sera substituido pela resposta da pagina solicitada.
-  const inicio = (paginaAtual - 1) * itensPorPagina
-  return lista.slice(inicio, inicio + itensPorPagina)
 }
 
 function montarPaginasVisiveis(totalPaginas, paginaAtual) {
@@ -312,11 +111,22 @@ function PaginacaoNumerada({
 }
 
 export function TelaDashboard() {
-  const [disciplinas, setDisciplinas] = useState(DISCIPLINAS_INICIAIS)
-  const [abrirModal, setAbrirModal] = useState(false)
-  const [disciplinaSelecionadaId, setDisciplinaSelecionadaId] = useState(null)
+  const [nomeUsuario, setNomeUsuario] = useState('Estudante')
+  const [resumo, setResumo] = useState({ totalDisciplinas: 0, tarefasConcluidas: '0/0', tempoEstudo: 0, progressoGeral: 0 })
+  const [dadosPizza, setDadosPizza] = useState([])
+  const [dadosBarras, setDadosBarras] = useState([])
+
+  const [disciplinasPaginadas, setDisciplinasPaginadas] = useState([])
+  const [totalPaginasDisciplinas, setTotalPaginasDisciplinas] = useState(1)
   const [paginaAtualDisciplinas, setPaginaAtualDisciplinas] = useState(1)
+
+  const [tarefasPriorizadasPaginadas, setTarefasPrioritariasPaginadas] = useState([])
+  const [totalPaginasTarefas, setTotalPaginasTarefas] = useState(1)
   const [paginaAtualTarefas, setPaginaAtualTarefas] = useState(1)
+
+  const [disciplinaSelecionada, setDisciplinaSelecionada] = useState(null)
+  
+  const [abrirModal, setAbrirModal] = useState(false)
   const [formularioDisciplina, setFormularioDisciplina] = useState({
     nome: '',
     professor: '',
@@ -326,130 +136,91 @@ export function TelaDashboard() {
     dataFim: '',
   })
 
-  const resumo = useMemo(() => {
-    const totalDisciplinas = disciplinas.length
-    const tarefasConcluidas = disciplinas.reduce((soma, item) => soma + item.tarefasConcluidas, 0)
-    const tarefasTotais = disciplinas.reduce((soma, item) => soma + item.tarefasTotais, 0)
-    const tempoEstudo = disciplinas.reduce((soma, item) => soma + item.cargaHoraria, 0)
-    const progressoGeral = tarefasTotais === 0 ? 0 : Math.round((tarefasConcluidas / tarefasTotais) * 100)
-
-    return {
-      totalDisciplinas,
-      tarefasConcluidas,
-      tarefasTotais,
-      tempoEstudo,
-      progressoGeral,
-    }
-  }, [disciplinas])
-
-  const dadosPizza = useMemo(
-    () =>
-      disciplinas.map((item) => ({
-        nome: item.nome,
-        horas: item.cargaHoraria,
-      })),
-    [disciplinas],
-  )
-
-  const dadosBarras = useMemo(
-    () =>
-      disciplinas.map((item) => ({
-        nome: item.nome,
-        total: item.tarefasTotais,
-        concluidas: item.tarefasConcluidas,
-      })),
-    [disciplinas],
-  )
-
-  const tarefasPriorizadas = useMemo(() => {
-    // Temporario: esta ordenacao e paginacao local simulam os dados da API; quando o backend estiver pronto,
-    // a tela vai apenas exibir a ordem e a pagina recebidas pelo servidor.
-    return TAREFAS_MOCK.map((tarefa) => {
-      const dataEntrega = criarDataEmDias(tarefa.diasParaEntrega)
-      const prioridade = calcularPrioridade(dataEntrega, tarefa.status)
-
-      return {
-        ...tarefa,
-        prioridade,
-        prazo: formatarPrazo(dataEntrega),
-        prazoDias: tarefa.diasParaEntrega,
+  useEffect(() => {
+    async function fetchUsuario() {
+      try {
+        const response = await api.get('/users/me')
+        setNomeUsuario(response.data.nome)
+      } catch (err) {
+        console.error(err)
       }
-    })
-      .filter((tarefa) => tarefa.status !== 'CONCLUIDA')
-      .sort((a, b) => {
-        const ordemPrioridade = ORDEM_PRIORIDADE[a.prioridade] - ORDEM_PRIORIDADE[b.prioridade]
-        if (ordemPrioridade !== 0) {
-          return ordemPrioridade
-        }
-
-        return a.prazoDias - b.prazoDias
-      })
+    }
+    fetchUsuario()
   }, [])
 
-  const tarefasPriorizadasVisiveis = useMemo(() => {
-    if (!disciplinaSelecionadaId) {
-      return tarefasPriorizadas
+  async function carregarDadosDashboard() {
+    try {
+      const [resResumo, resPizza, resBarras] = await Promise.all([
+        api.get('/dashboard/resumo'),
+        api.get('/dashboard/graficos/disciplinas'),
+        api.get('/dashboard/graficos/tarefas-por-status')
+      ])
+      
+      setResumo({
+        totalDisciplinas: resResumo.data.totalDisciplinas || 0,
+        tarefasConcluidas: resResumo.data.tarefasConcluidas || '0/0',
+        tempoEstudo: resResumo.data.tempoEstudo || 0,
+        progressoGeral: resResumo.data.progressoGeral || 0
+      })
+      
+      setDadosPizza((resPizza.data || []).map(d => ({ nome: d.nome, horas: d.cargaHoraria })))
+      
+      setDadosBarras((resBarras.data || []).map(d => ({
+        nome: d.nomeDisciplina,
+        total: d.totalTarefas,
+        concluidas: d.tarefasConcluidas
+      })))
+    } catch (err) {
+      console.error(err)
     }
+  }
 
-    return tarefasPriorizadas.filter((tarefa) => tarefa.disciplinaId === disciplinaSelecionadaId)
-  }, [tarefasPriorizadas, disciplinaSelecionadaId])
-
-  const totalPaginasDisciplinas = useMemo(
-    () => Math.max(1, Math.ceil(disciplinas.length / ITENS_POR_PAGINA_DISCIPLINAS)),
-    [disciplinas.length],
-  )
-
-  const totalPaginasTarefas = useMemo(
-    () => Math.max(1, Math.ceil(tarefasPriorizadasVisiveis.length / ITENS_POR_PAGINA_TAREFAS)),
-    [tarefasPriorizadasVisiveis.length],
-  )
-
-  const disciplinasPaginadas = useMemo(
-    // Temporario: simula pagina 1, 2, 3... localmente; depois vira uma chamada como
-    // fetch(`/api/disciplinas?page=${paginaAtualDisciplinas}&limit=${ITENS_POR_PAGINA_DISCIPLINAS}`).
-    () => aplicarPaginacaoTemporaria(disciplinas, paginaAtualDisciplinas, ITENS_POR_PAGINA_DISCIPLINAS),
-    [disciplinas, paginaAtualDisciplinas],
-  )
-
-  const tarefasPriorizadasPaginadas = useMemo(
-    () =>
-      aplicarPaginacaoTemporaria(
-        tarefasPriorizadasVisiveis,
-        paginaAtualTarefas,
-        ITENS_POR_PAGINA_TAREFAS,
-      ),
-    [tarefasPriorizadasVisiveis, paginaAtualTarefas],
-  )
-
-  const disciplinaSelecionada = useMemo(() => {
-    if (!disciplinaSelecionadaId) {
-      return null
+  async function carregarDisciplinas() {
+    try {
+      const response = await api.get(`/dashboard/disciplinas?page=${paginaAtualDisciplinas - 1}&size=${ITENS_POR_PAGINA_DISCIPLINAS}`)
+      setDisciplinasPaginadas(response.data.content || [])
+      setTotalPaginasDisciplinas(response.data.totalPages === 0 ? 1 : response.data.totalPages)
+    } catch (err) {
+      console.error(err)
     }
+  }
 
-    return disciplinas.find((disciplina) => disciplina.id === disciplinaSelecionadaId) ?? null
-  }, [disciplinas, disciplinaSelecionadaId])
+  async function carregarTarefasPrioritarias() {
+    try {
+      let url = `/dashboard/tarefas-prioritarias?page=${paginaAtualTarefas - 1}&size=${ITENS_POR_PAGINA_TAREFAS}`
+      if (disciplinaSelecionada) {
+        url += `&disciplinaId=${disciplinaSelecionada.id}`
+      }
+      const response = await api.get(url)
+      setTarefasPrioritariasPaginadas(response.data.content || [])
+      setTotalPaginasTarefas(response.data.totalPages === 0 ? 1 : response.data.totalPages)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  useEffect(() => {
+    carregarDadosDashboard()
+  }, [])
+
+  useEffect(() => {
+    carregarDisciplinas()
+  }, [paginaAtualDisciplinas])
+
+  useEffect(() => {
+    carregarTarefasPrioritarias()
+  }, [paginaAtualTarefas, disciplinaSelecionada])
 
   useEffect(() => {
     setPaginaAtualTarefas(1)
-  }, [disciplinaSelecionadaId])
-
-  useEffect(() => {
-    // Garante pagina valida quando a lista muda (ex.: filtro futuro ou alteracoes nos dados).
-    setPaginaAtualDisciplinas((paginaAtual) => Math.min(Math.max(paginaAtual, 1), totalPaginasDisciplinas))
-  }, [totalPaginasDisciplinas])
-
-  useEffect(() => {
-    if (paginaAtualTarefas > totalPaginasTarefas) {
-      setPaginaAtualTarefas(totalPaginasTarefas)
-    }
-  }, [paginaAtualTarefas, totalPaginasTarefas])
+  }, [disciplinaSelecionada])
 
   function handleInput(event) {
     const { name, value } = event.target
     setFormularioDisciplina((atual) => ({ ...atual, [name]: value }))
   }
 
-  function handleNovaDisciplina(event) {
+  async function handleNovaDisciplina(event) {
     event.preventDefault()
 
     const cargaHorariaNumero = Number(formularioDisciplina.cargaHoraria)
@@ -459,43 +230,44 @@ export function TelaDashboard() {
       !cargaHorariaNumero ||
       !formularioDisciplina.descricao ||
       !formularioDisciplina.dataInicio ||
-      !formularioDisciplina.dataFim
+      !formularioDisciplina.dataFim ||
+      formularioDisciplina.dataFim < formularioDisciplina.dataInicio
     ) {
       return
     }
 
-    if (formularioDisciplina.dataFim < formularioDisciplina.dataInicio) {
-      return
-    }
+    try {
+      await api.post('/disciplinas', {
+        nome: formularioDisciplina.nome,
+        professor: formularioDisciplina.professor,
+        cargaHoraria: cargaHorariaNumero,
+        descricao: formularioDisciplina.descricao,
+        dataInicio: formularioDisciplina.dataInicio,
+        dataFim: formularioDisciplina.dataFim,
+      })
 
-    const novaDisciplina = {
-      id: Date.now(),
-      nome: formularioDisciplina.nome,
-      professor: formularioDisciplina.professor,
-      cargaHoraria: cargaHorariaNumero,
-      descricao: formularioDisciplina.descricao,
-      dataInicio: formularioDisciplina.dataInicio,
-      dataFim: formularioDisciplina.dataFim,
-      tarefasConcluidas: 0,
-      tarefasTotais: 0,
-    }
+      setFormularioDisciplina({
+        nome: '',
+        professor: '',
+        cargaHoraria: '',
+        descricao: '',
+        dataInicio: '',
+        dataFim: '',
+      })
+      setAbrirModal(false)
 
-    setDisciplinas((atual) => [...atual, novaDisciplina])
-    setFormularioDisciplina({
-      nome: '',
-      professor: '',
-      cargaHoraria: '',
-      descricao: '',
-      dataInicio: '',
-      dataFim: '',
-    })
-    setAbrirModal(false)
+      carregarDadosDashboard()
+      carregarDisciplinas()
+      carregarTarefasPrioritarias()
+    } catch (err) {
+      console.error('Erro ao cadastrar disciplina', err)
+    }
   }
 
   return (
     <main className="dashboard-principal">
       <section className="cabecalho-dashboard">
-        <h1>Ola, Estudante! 👋</h1>
+        <h1>Olá, {nomeUsuario}! 👋</h1>
         <p>Aqui esta um resumo em tempo real da sua vida academica.</p>
       </section>
 
@@ -515,9 +287,7 @@ export function TelaDashboard() {
           </span>
           <div>
             <span>Tarefas Concluidas</span>
-            <strong>
-              {resumo.tarefasConcluidas}/{resumo.tarefasTotais}
-            </strong>
+            <strong>{resumo.tarefasConcluidas}</strong>
           </div>
         </article>
         <article className="card-resumo card-resumo-tempo">
@@ -535,7 +305,7 @@ export function TelaDashboard() {
           </span>
           <div>
             <span>Progresso Geral</span>
-            <strong>{resumo.progressoGeral}%</strong>
+            <strong>{Number(resumo.progressoGeral || 0).toFixed(2).replace('.', ',')}%</strong>
           </div>
         </article>
       </section>
@@ -558,8 +328,8 @@ export function TelaDashboard() {
                   outerRadius={85}
                   label={({ percent }) => `${Math.round(percent * 100)}%`}
                 >
-                  {dadosPizza.map((entrada, indice) => (
-                    <Cell key={entrada.nome} fill={CORES_GRAFICO[indice % CORES_GRAFICO.length]} />
+                  {dadosPizza.map((entrada) => (
+                    <Cell key={entrada.nome} fill={gerarCorPorString(entrada.nome)} />
                   ))}
                 </Pie>
                 <Tooltip formatter={(valor) => [`${valor}h`, 'Carga Horaria']} />
@@ -567,11 +337,11 @@ export function TelaDashboard() {
             </ResponsiveContainer>
           </div>
           <ul className="legenda-pizza" aria-label="Legenda do grafico de pizza">
-            {dadosPizza.map((item, indice) => (
+            {dadosPizza.map((item) => (
               <li key={item.nome}>
                 <span
                   className="cor-legenda"
-                  style={{ backgroundColor: CORES_GRAFICO[indice % CORES_GRAFICO.length] }}
+                  style={{ backgroundColor: gerarCorPorString(item.nome) }}
                   aria-hidden="true"
                 />
                 <small>{item.nome}</small>
@@ -590,7 +360,12 @@ export function TelaDashboard() {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--cor-borda)" />
                 <XAxis
                   dataKey="nome"
+                  interval={0}
+                  angle={-35}
+                  textAnchor="end"
+                  height={60}
                   tick={{ fontSize: 11, fill: 'var(--cor-texto-suave)' }}
+                  tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
                   axisLine={{ stroke: 'var(--cor-borda)' }}
                   tickLine={{ stroke: 'var(--cor-borda)' }}
                 />
@@ -636,22 +411,20 @@ export function TelaDashboard() {
 
           <div className="lista-disciplinas">
             {disciplinasPaginadas.map((item) => {
-              const progresso =
-                item.tarefasTotais === 0
-                  ? 0
-                  : Math.round((item.tarefasConcluidas / item.tarefasTotais) * 100)
+              const progresso = item.porcentagemConclusao || 0
+              const progressoExibicao = Number(progresso).toFixed(2).replace('.', ',')
 
               return (
                 <article
-                  className={`item-disciplina ${disciplinaSelecionadaId === item.id ? 'item-disciplina-ativo' : ''}`}
+                  className={`item-disciplina ${disciplinaSelecionada?.id === item.id ? 'item-disciplina-ativo' : ''}`}
                   key={item.id}
                   role="button"
                   tabIndex={0}
-                  onClick={() => setDisciplinaSelecionadaId(item.id)}
+                  onClick={() => setDisciplinaSelecionada(item)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
-                      setDisciplinaSelecionadaId(item.id)
+                      setDisciplinaSelecionada(item)
                     }
                   }}
                 >
@@ -660,7 +433,7 @@ export function TelaDashboard() {
                       <h3>{item.nome}</h3>
                       <p>{item.professor}</p>
                     </div>
-                    <span>{progresso}%</span>
+                    <span>{progressoExibicao}%</span>
                   </header>
 
                   <small className="rotulo-progresso-disciplina">Progresso</small>
@@ -670,7 +443,7 @@ export function TelaDashboard() {
 
                   <footer>
                     <small>
-                      {item.tarefasConcluidas}/{item.tarefasTotais} tarefas
+                      {item.tarefas} tarefas
                     </small>
                     <small className="tempo-disciplina">
                       <span aria-hidden="true">🕒</span>
@@ -696,7 +469,7 @@ export function TelaDashboard() {
           <div className="topo-prioritarias">
             <h2>Tarefas Prioritarias</h2>
             {disciplinaSelecionada && (
-              <button type="button" className="botao-mostrar-todas" onClick={() => setDisciplinaSelecionadaId(null)}>
+              <button type="button" className="botao-mostrar-todas" onClick={() => setDisciplinaSelecionada(null)}>
                 Mostrar todas
               </button>
             )}
@@ -713,13 +486,13 @@ export function TelaDashboard() {
                 className={`item-prioritaria ${tarefa.prioridade === 'ATRASADA' ? 'prioridade-atrasada' : tarefa.prioridade === 'ALTA' ? 'prioridade-alta' : tarefa.prioridade === 'MEDIA' ? 'prioridade-media' : tarefa.prioridade === 'BAIXA' ? 'prioridade-baixa' : ''}`}
               >
                 <h3>{tarefa.titulo}</h3>
-                <p>{tarefa.disciplina}</p>
-                <small>Prioridade: {tarefa.prioridade === 'ALTA' ? 'Alto' : tarefa.prioridade === 'MEDIA' ? 'Medio' : tarefa.prioridade === 'BAIXA' ? 'Baixo' : tarefa.prioridade === 'ATRASADA' ? 'Atrasada' : '—'}</small>
+                <p>{tarefa.nomeDisciplina}</p>
+                <small>Prioridade: {tarefa.prioridade === 'ALTA' ? 'Alta' : tarefa.prioridade === 'MEDIA' ? 'Média' : tarefa.prioridade === 'BAIXA' ? 'Baixa' : tarefa.prioridade === 'ATRASADA' ? 'Atrasada' : '—'}</small>
                 <small>Prazo: {tarefa.prazo}</small>
               </article>
             ))}
 
-            {tarefasPriorizadasVisiveis.length === 0 && (
+            {tarefasPriorizadasPaginadas.length === 0 && (
               <p className="mensagem-vazia-prioritarias">
                 Sem tarefas prioritarias para esta disciplina.
               </p>
