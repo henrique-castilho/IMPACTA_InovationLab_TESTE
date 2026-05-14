@@ -477,4 +477,13 @@
     height: 32px;
     font-size: 0.82rem;
   }
+
+  .card-tarefa {
+    grid-template-columns: 1fr;
+  }
+
+  .acoes-tarefa {
+    justify-content: flex-start;
+    margin-top: 10px;
+  }
 }

@@ -101,3 +101,23 @@ body.dark-mode input[type='month']::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(1.9);
   opacity: 1;
 }
+
+/* Melhorias de Acessibilidade e Mobile Global */
+@media (max-width: 600px) {
+  input, 
+  select, 
+  textarea {
+    font-size: 16px !important; /* Impede zoom automático no iOS */
+  }
+
+  button, 
+  .paginacao-botao, 
+  .botao-acao {
+    min-height: 40px; /* Melhora área de toque */
+  }
+}
+
+.scroll-suave {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}

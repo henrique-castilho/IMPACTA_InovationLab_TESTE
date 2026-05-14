@@ -101,7 +101,23 @@
 
 .card-resumo > div {
   min-width: 0;
-  transform: translateX(15px);
+  transform: translateX(10px);
+}
+
+@media (max-width: 400px) {
+  .card-resumo {
+    padding-right: 12px;
+    flex-direction: column-reverse;
+  }
+
+  .card-resumo-icone {
+    position: static;
+    margin-bottom: 10px;
+  }
+
+  .card-resumo > div {
+    transform: none;
+  }
 }
 
 .grade-graficos {
