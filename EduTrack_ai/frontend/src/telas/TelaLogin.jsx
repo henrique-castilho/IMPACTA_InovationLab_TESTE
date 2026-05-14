@@ -124,7 +124,6 @@ export function TelaLogin() {
 
           <div className="redes-sociais">
             <button type="button" className="botao-social">Google</button>
-            <button type="button" className="botao-social">Facebook</button>
           </div>
 
           <p className="rodape-autenticacao">
