@@ -19,6 +19,11 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
 
     public Usuario atualizarPerfil(Usuario usuario, UsuarioAtualizarRequestDTO dto) {
+        if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Conta criada com Google nao pode editar os dados.");
+        }
+
         // Verifica unicidade de email
         if (!usuario.getEmail().equals(dto.getEmail()) && usuarioRepository.existsByEmail(dto.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email ja cadastrado");

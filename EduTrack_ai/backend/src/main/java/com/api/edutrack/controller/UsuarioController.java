@@ -29,7 +29,7 @@ public class UsuarioController {
     @GetMapping("/me")
     public UsuarioMeResponseDTO me() {
         Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();
-        return new UsuarioMeResponseDTO(usuario.getId(), usuario.getNome(), usuario.getEmail());
+        return new UsuarioMeResponseDTO(usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getFotoUrl());
     }
 
     @PutMapping("/me")
@@ -41,7 +41,7 @@ public class UsuarioController {
         boolean relogin = emailAlterado || senhaAlterada;
         return ResponseEntity.ok(
             java.util.Map.of(
-                "usuario", new UsuarioMeResponseDTO(atualizado.getId(), atualizado.getNome(), atualizado.getEmail()),
+                "usuario", new UsuarioMeResponseDTO(atualizado.getId(), atualizado.getNome(), atualizado.getEmail(), atualizado.getFotoUrl()),
                 "relogin", relogin
             )
         );

@@ -13,6 +13,7 @@ import java.util.Map;
 import com.api.edutrack.dto.AuthLoginRequestDTO;
 import com.api.edutrack.dto.AuthCadastroRequestDTO;
 import com.api.edutrack.dto.AuthResponseDTO;
+import com.api.edutrack.dto.GoogleLoginRequestDTO;
 import com.api.edutrack.dto.EsqueciSenhaDTO;
 import com.api.edutrack.dto.ResetarSenhaDTO;
 import com.api.edutrack.dto.VerificaCodigoDTO;
@@ -38,6 +39,11 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponseDTO login(@Valid @RequestBody AuthLoginRequestDTO request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/login/oauth2/google")
+    public AuthResponseDTO loginComGoogle(@Valid @RequestBody GoogleLoginRequestDTO request) {
+        return authService.loginComGoogle(request);
     }
 
     @PostMapping("/esqueci-senha")

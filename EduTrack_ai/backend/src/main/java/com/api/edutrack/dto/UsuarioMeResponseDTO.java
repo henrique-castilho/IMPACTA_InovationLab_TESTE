@@ -10,12 +10,14 @@ public class UsuarioMeResponseDTO {
     private Long id;
     private String nome;
     private String email;
+    private String fotoUrl;
     private String senha;
 
-    public UsuarioMeResponseDTO(Long id, String nome, String email) {
+    public UsuarioMeResponseDTO(Long id, String nome, String email, String fotoUrl) {
         this.id = id;
         this.nome = nome;
         this.email = email;
+        this.fotoUrl = fotoUrl;
         this.senha = "*******";
     }
 

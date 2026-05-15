@@ -11,15 +11,19 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.api.edutrack.dto.AuthLoginRequestDTO;
 import com.api.edutrack.dto.AuthCadastroRequestDTO;
 import com.api.edutrack.dto.AuthResponseDTO;
+import com.api.edutrack.dto.GoogleLoginRequestDTO;
 import com.api.edutrack.dto.EsqueciSenhaDTO;
 import com.api.edutrack.dto.ResetarSenhaDTO;
 import com.api.edutrack.dto.VerificaCodigoDTO;
+import com.api.edutrack.entity.SocialLogin;
 import com.api.edutrack.entity.Usuario;
+import com.api.edutrack.repository.SocialLoginRepository;
 import com.api.edutrack.repository.UsuarioRepository;
 import com.api.edutrack.security.JwtUtil;
 
@@ -33,8 +37,10 @@ public class AuthService {
     private static final long TEMPO_EXPIRACAO_CODIGO_MINUTOS = 5;
 
     private final UsuarioRepository usuarioRepository;
+    private final SocialLoginRepository socialLoginRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final GoogleOAuth2Service googleOAuth2Service;
     private final ConcurrentHashMap<String, CodigoRecuperacao> codigosRecuperacao = new ConcurrentHashMap<>();
     private final SecureRandom random = new SecureRandom();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -53,24 +59,81 @@ public class AuthService {
         Usuario salvo = usuarioRepository.save(usuario);
         String token = jwtUtil.gerarToken(salvo.getEmail());
 
-        return new AuthResponseDTO(token, "Bearer", salvo.getId());
+        return new AuthResponseDTO(token, "Bearer", salvo.getId(), salvo.getNome(), salvo.getFotoUrl());
     }
 
     public AuthResponseDTO login(AuthLoginRequestDTO request) {
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais invalidas"));
+
+        if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Conta criada com Google. Use o login social.");
+        }
         
         if (!passwordEncoder.matches(request.getSenha(), usuario.getSenha())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais invalidas");
         }
 
         String token = jwtUtil.gerarToken(usuario.getEmail());
-        return new AuthResponseDTO(token, "Bearer", usuario.getId());
+        return new AuthResponseDTO(token, "Bearer", usuario.getId(), usuario.getNome(), usuario.getFotoUrl());
+    }
+
+    @Transactional
+    public AuthResponseDTO loginComGoogle(GoogleLoginRequestDTO request) {
+        var googleUser = googleOAuth2Service.obterUsuario(request.getAccessToken());
+
+        SocialLogin socialLogin = socialLoginRepository
+                .findByProviderAndProviderId("google", googleUser.id())
+                .orElse(null);
+
+        Usuario usuario;
+        
+        if (socialLogin != null) {
+            usuario = socialLogin.getUsuario();
+            if (usuario == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Login social sem usuario vinculado");
+            }
+        } else {
+            usuario = usuarioRepository.findByEmail(googleUser.email()).orElse(null);
+            if (usuario == null) {
+                usuario = Usuario.builder()
+                        .nome(googleUser.name() != null && !googleUser.name().isBlank() ? googleUser.name() : "Usuario Google")
+                        .email(googleUser.email())
+                        .senha(null)
+                        .fotoUrl(googleUser.picture())
+                        .build();
+                usuario = usuarioRepository.save(usuario);
+            }
+
+            SocialLogin novoSocialLogin = SocialLogin.builder()
+                    .usuario(usuario)
+                    .provider("google")
+                    .providerId(googleUser.id())
+                    .build();
+            socialLoginRepository.save(novoSocialLogin);
+        }
+
+        // Se o usuário (novo ou existente) não tiver foto, mas o Google fornecer uma, vamos salvar
+        if ((usuario.getFotoUrl() == null || usuario.getFotoUrl().isBlank()) && 
+            googleUser.picture() != null && !googleUser.picture().isBlank()) {
+            usuario.setFotoUrl(googleUser.picture());
+            usuario = usuarioRepository.save(usuario);
+        }
+
+        String token = jwtUtil.gerarToken(usuario.getEmail());
+        return new AuthResponseDTO(token, "Bearer", usuario.getId(), usuario.getNome(), usuario.getFotoUrl());
     }
 
     public String gerarCodigoRecuperacao(EsqueciSenhaDTO request) {
-        usuarioRepository.findByEmail(request.getEmail())
+        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario nao encontrado"));
+
+        if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Conta criada com Google nao possui senha para redefinir");
+        }
 
         String codigo = String.format("%06d", random.nextInt(1_000_000));
         Instant expiraEm = Instant.now().plus(TEMPO_EXPIRACAO_CODIGO_MINUTOS, ChronoUnit.MINUTES);
@@ -94,6 +157,11 @@ public class AuthService {
 
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario nao encontrado"));
+
+        if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Conta criada com Google nao possui senha para redefinir");
+        }
 
         if (passwordEncoder.matches(request.getNovaSenha(), usuario.getSenha())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nova senha nao pode ser igual a senha atual");

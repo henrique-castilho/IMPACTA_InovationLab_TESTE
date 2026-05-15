@@ -36,8 +36,15 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 180)
     private String email;
 
-    @Column(nullable = false, length = 255)
+    @Column(length = 255)
     private String senha;
+
+    @Column(length = 500)
+    private String fotoUrl;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SocialLogin> socialLogins = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
