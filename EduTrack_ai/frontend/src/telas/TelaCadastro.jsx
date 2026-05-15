@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useGoogleLogin } from '@react-oauth/google'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
 import { ToggleTema } from '../componentes/ToggleTema'
 import api, { CHAVE_TOKEN, CHAVE_USER_ID, obterToken } from '../services/api'
@@ -21,6 +22,29 @@ export function TelaCadastro() {
     }
   }, [navigate])
 
+  const loginGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setCarregando(true)
+      setErro('')
+      try {
+        const resposta = await api.post('/auth/login/oauth2/google', {
+          accessToken: tokenResponse.access_token
+        })
+        const dados = resposta.data
+        if (dados.token) {
+          localStorage.setItem(CHAVE_TOKEN, dados.token)
+          localStorage.setItem(CHAVE_USER_ID, dados.userId)
+          navigate('/dashboard')
+        }
+      } catch (err) {
+        setErro('Falha no cadastro com Google. Tente novamente.')
+      } finally {
+        setCarregando(false)
+      }
+    },
+    onError: () => setErro('Erro ao autenticar com o Google.')
+  })
+
   async function lidarComCadastro(evento) {
     evento.preventDefault()
     setCarregando(true)
@@ -28,18 +52,13 @@ export function TelaCadastro() {
 
     try {
       const resposta = await api.post('/auth/cadastro', { nome, email, senha })
-      
-      // Salva o token e o ID retornado para logar automaticamente
       const { token, userId } = resposta.data
       
-      // Por padrão, ao se cadastrar, vamos usar localStorage para manter logado
       window.localStorage.setItem(CHAVE_TOKEN, token)
       window.localStorage.setItem(CHAVE_USER_ID, userId)
       
-      // Redireciona para o dashboard
       navigate('/dashboard')
     } catch (err) {
-      // Extrai mensagem de erro especifica (ex: Email ja cadastrado ou Nome muito curto)
       const mensagemErro = err.response?.data?.detalhes 
         ? Object.values(err.response.data.detalhes)[0]
         : err.response?.data?.mensagem || 'Erro ao realizar cadastro.'
@@ -122,7 +141,14 @@ export function TelaCadastro() {
           <div className="divisor">Ou continue com</div>
 
           <div className="redes-sociais">
-            <button type="button" className="botao-social">Google</button>
+            <button 
+              type="button" 
+              className="botao-social" 
+              onClick={() => loginGoogle()}
+              disabled={carregando}
+            >
+              Google
+            </button>
           </div>
 
           <p className="rodape-autenticacao">

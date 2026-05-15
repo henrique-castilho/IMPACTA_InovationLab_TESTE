@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useGoogleLogin } from '@react-oauth/google'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
 import { ToggleTema } from '../componentes/ToggleTema'
 import api, { CHAVE_TOKEN, CHAVE_USER_ID, obterToken } from '../services/api'
@@ -21,6 +22,31 @@ export function TelaLogin() {
     }
   }, [navigate])
 
+  const loginGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setCarregando(true)
+      setErro('')
+      try {
+        const resposta = await api.post('/auth/login/oauth2/google', {
+          accessToken: tokenResponse.access_token
+        })
+        const dados = resposta.data
+        if (dados.token) {
+          // Agora respeita o checkbox "Lembrar de mim"
+          const storage = lembrar ? window.localStorage : window.sessionStorage
+          storage.setItem(CHAVE_TOKEN, dados.token)
+          storage.setItem(CHAVE_USER_ID, dados.userId)
+          navigate('/dashboard')
+        }
+      } catch (err) {
+        setErro('Falha no login com Google. Tente novamente.')
+      } finally {
+        setCarregando(false)
+      }
+    },
+    onError: () => setErro('Erro ao autenticar com o Google.')
+  })
+
   async function lidarComLogin(evento) {
     evento.preventDefault()
     setCarregando(true)
@@ -39,7 +65,6 @@ export function TelaLogin() {
         throw new Error('Token nao recebido do servidor.')
       }
     } catch (err) {
-      // Tratamento de erro ajustado para o formato do Axios
       const mensagemErro = err.response?.data?.detalhes 
         ? Object.values(err.response.data.detalhes)[0]
         : err.response?.data?.mensagem || 'Falha na autenticacao. Verifique suas credenciais.'
@@ -123,7 +148,14 @@ export function TelaLogin() {
           <div className="divisor">Ou continue com</div>
 
           <div className="redes-sociais">
-            <button type="button" className="botao-social">Google</button>
+            <button 
+              type="button" 
+              className="botao-social" 
+              onClick={() => loginGoogle()}
+              disabled={carregando}
+            >
+              Google
+            </button>
           </div>
 
           <p className="rodape-autenticacao">

@@ -4,7 +4,7 @@ import { ToggleTema } from './ToggleTema'
 import { limparSessao } from '../services/api'
 import './NavbarPrincipal.css'
 
-export function NavbarPrincipal({ nomeUsuario }) {
+export function NavbarPrincipal({ nomeUsuario, fotoUrl }) {
   const [menuAberto, setMenuAberto] = useState(false)
   const navigate = useNavigate()
 
@@ -16,11 +16,20 @@ export function NavbarPrincipal({ nomeUsuario }) {
   const toggleMenu = () => setMenuAberto(!menuAberto)
   const fecharMenu = () => setMenuAberto(false)
 
+  // Obtém a inicial do nome para o fallback
+  const inicial = nomeUsuario ? nomeUsuario.charAt(0).toUpperCase() : 'U'
+
   return (
     <header className={`navbar-principal ${menuAberto ? 'menu-aberto' : ''}`}>
       <div className="navbar-topo-mobile">
         <div className="navbar-logo-area">
-          <span className="navbar-logo">ED</span>
+          <div className="navbar-perfil-container">
+            {fotoUrl ? (
+              <img src={fotoUrl} alt={nomeUsuario} className="navbar-foto-perfil" />
+            ) : (
+              <span className="navbar-logo">{inicial}</span>
+            )}
+          </div>
           <div>
             <strong>EduTrack AI</strong>
             <small>Bem-vindo, {nomeUsuario}</small>

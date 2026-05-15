@@ -4,8 +4,8 @@ import api, { limparSessao } from '../services/api'
 import './TelaPerfil.css'
 
 export function TelaPerfil() {
-  const [dados, setDados] = useState({ nome: '', email: '', senha: '' })
-  const [dadosOriginais, setDadosOriginais] = useState({ nome: '', email: '', senha: '' })
+  const [dados, setDados] = useState({ nome: '', email: '', senha: '', ehSocial: false })
+  const [dadosOriginais, setDadosOriginais] = useState({ nome: '', email: '', senha: '', ehSocial: false })
   const [editando, setEditando] = useState(false)
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
@@ -31,6 +31,7 @@ export function TelaPerfil() {
         nome: resposta.data.nome,
         email: resposta.data.email,
         senha: '',
+        ehSocial: resposta.data.ehSocial
       }
       setDados(usuario)
       setDadosOriginais(usuario)
@@ -73,6 +74,7 @@ export function TelaPerfil() {
         nome: resposta.data.usuario.nome,
         email: resposta.data.usuario.email,
         senha: '',
+        ehSocial: resposta.data.usuario.ehSocial
       }
       setDados(usuarioAtualizado)
       setDadosOriginais(usuarioAtualizado)
@@ -80,7 +82,6 @@ export function TelaPerfil() {
       setMensagemSucesso('Perfil atualizado com sucesso!')
       setExibirModalSucesso(true)
     } catch (err) {
-      // Tratamento de erro ajustado para capturar detalhes especificos (ex: tamanho do nome)
       const mensagemErro = err.response?.data?.detalhes 
         ? Object.values(err.response.data.detalhes)[0]
         : err.response?.data?.mensagem || 'Erro ao atualizar perfil.'
@@ -99,7 +100,6 @@ export function TelaPerfil() {
 
   function fecharModalSucesso() {
     setExibirModalSucesso(false)
-    // Se a mensagem contem "login novamente", desloga o usuario
     if (mensagemSucesso.includes('login novamente')) {
       limparSessao()
       navigate('/login')
@@ -153,8 +153,8 @@ export function TelaPerfil() {
             />
           </label>
 
-          <label htmlFor="email-perfil">
-            E-mail
+          <label htmlFor="email-perfil" className={dados.ehSocial ? 'campo-bloqueado' : ''}>
+            E-mail {dados.ehSocial && <small>(Gerenciado pelo Google)</small>}
             <input
               id="email-perfil"
               name="email"
@@ -162,20 +162,22 @@ export function TelaPerfil() {
               value={dados.email}
               onChange={handleCampo}
               readOnly={!editando}
+              disabled={dados.ehSocial}
               required
             />
           </label>
 
-          <label htmlFor="senha-perfil">
-            Senha {editando && <small>(deixe em branco para manter a atual)</small>}
+          <label htmlFor="senha-perfil" className={dados.ehSocial ? 'campo-bloqueado' : ''}>
+            Senha {dados.ehSocial ? <small>(Gerenciado pelo Google)</small> : (editando && <small>(deixe em branco para manter a atual)</small>)}
             <input
               id="senha-perfil"
               name="senha"
-              type={editando ? 'text' : 'password'}
+              type={editando && !dados.ehSocial ? 'text' : 'password'}
               value={editando ? dados.senha : '********'}
               onChange={handleCampo}
-              placeholder={editando ? 'Nova senha (opcional)' : ''}
+              placeholder={editando && !dados.ehSocial ? 'Nova senha (opcional)' : ''}
               readOnly={!editando}
+              disabled={dados.ehSocial}
             />
           </label>
 
