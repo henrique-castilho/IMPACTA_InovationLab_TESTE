@@ -12,12 +12,14 @@ public class UsuarioMeResponseDTO {
     private String email;
     private String fotoUrl;
     private String senha;
+    private boolean ehSocial;
 
-    public UsuarioMeResponseDTO(Long id, String nome, String email, String fotoUrl) {
+    public UsuarioMeResponseDTO(Long id, String nome, String email, String fotoUrl, boolean ehSocial) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.fotoUrl = fotoUrl;
+        this.ehSocial = ehSocial;
         this.senha = "*******";
     }
 

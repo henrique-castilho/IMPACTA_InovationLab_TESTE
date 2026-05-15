@@ -59,7 +59,7 @@ public class AuthService {
         Usuario salvo = usuarioRepository.save(usuario);
         String token = jwtUtil.gerarToken(salvo.getEmail());
 
-        return new AuthResponseDTO(token, "Bearer", salvo.getId(), salvo.getNome(), salvo.getFotoUrl());
+        return new AuthResponseDTO(token, "Bearer", salvo.getId(), salvo.getNome(), salvo.getFotoUrl(), false);
     }
 
     public AuthResponseDTO login(AuthLoginRequestDTO request) {
@@ -76,7 +76,7 @@ public class AuthService {
         }
 
         String token = jwtUtil.gerarToken(usuario.getEmail());
-        return new AuthResponseDTO(token, "Bearer", usuario.getId(), usuario.getNome(), usuario.getFotoUrl());
+        return new AuthResponseDTO(token, "Bearer", usuario.getId(), usuario.getNome(), usuario.getFotoUrl(), false);
     }
 
     @Transactional
@@ -123,7 +123,7 @@ public class AuthService {
         }
 
         String token = jwtUtil.gerarToken(usuario.getEmail());
-        return new AuthResponseDTO(token, "Bearer", usuario.getId(), usuario.getNome(), usuario.getFotoUrl());
+        return new AuthResponseDTO(token, "Bearer", usuario.getId(), usuario.getNome(), usuario.getFotoUrl(), true);
     }
 
     public String gerarCodigoRecuperacao(EsqueciSenhaDTO request) {

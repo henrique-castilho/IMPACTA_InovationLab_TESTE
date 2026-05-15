@@ -11,4 +11,5 @@ public class AuthResponseDTO {
     private Long userId;
     private String nome;
     private String fotoUrl;
+    private boolean ehSocial;
 }

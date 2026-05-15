@@ -19,20 +19,32 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
 
     public Usuario atualizarPerfil(Usuario usuario, UsuarioAtualizarRequestDTO dto) {
-        if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Conta criada com Google nao pode editar os dados.");
+        boolean ehUsuarioSocial = (usuario.getSenha() == null || usuario.getSenha().isBlank());
+
+        // Se for usuário Google, bloqueamos troca de e-mail e senha, mas permitimos o nome
+        if (ehUsuarioSocial) {
+            if (!usuario.getEmail().equals(dto.getEmail()) || (dto.getSenha() != null && !dto.getSenha().isBlank())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Contas vinculadas ao Google podem alterar apenas o nome de exibição.");
+            }
+        } else {
+            // Para usuários normais, validamos o e-mail se houver alteração
+            if (!usuario.getEmail().equals(dto.getEmail()) && usuarioRepository.existsByEmail(dto.getEmail())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Email já cadastrado");
+            }
+            usuario.setEmail(dto.getEmail());
+            if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
+                usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+            }
         }
 
-        // Verifica unicidade de email
-        if (!usuario.getEmail().equals(dto.getEmail()) && usuarioRepository.existsByEmail(dto.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email ja cadastrado");
-        }
+        // Nome pode ser alterado por qualquer tipo de usuário
         usuario.setNome(dto.getNome());
-        usuario.setEmail(dto.getEmail());
-        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
-            usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
-        }
+
+        return usuarioRepository.save(usuario);
+    }
+
+    public Usuario salvar(Usuario usuario) {
         return usuarioRepository.save(usuario);
     }
 

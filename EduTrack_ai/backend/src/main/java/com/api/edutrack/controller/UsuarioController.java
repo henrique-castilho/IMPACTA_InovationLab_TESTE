@@ -29,7 +29,8 @@ public class UsuarioController {
     @GetMapping("/me")
     public UsuarioMeResponseDTO me() {
         Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();
-        return new UsuarioMeResponseDTO(usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getFotoUrl());
+        boolean ehSocial = usuario.getSenha() == null || usuario.getSenha().isBlank();
+        return new UsuarioMeResponseDTO(usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getFotoUrl(), ehSocial);
     }
 
     @PutMapping("/me")
@@ -39,9 +40,10 @@ public class UsuarioController {
         boolean senhaAlterada = dto.getSenha() != null && !dto.getSenha().isBlank();
         Usuario atualizado = usuarioService.atualizarPerfil(usuario, dto);
         boolean relogin = emailAlterado || senhaAlterada;
+        boolean ehSocial = atualizado.getSenha() == null || atualizado.getSenha().isBlank();
         return ResponseEntity.ok(
             java.util.Map.of(
-                "usuario", new UsuarioMeResponseDTO(atualizado.getId(), atualizado.getNome(), atualizado.getEmail(), atualizado.getFotoUrl()),
+                "usuario", new UsuarioMeResponseDTO(atualizado.getId(), atualizado.getNome(), atualizado.getEmail(), atualizado.getFotoUrl(), ehSocial),
                 "relogin", relogin
             )
         );
