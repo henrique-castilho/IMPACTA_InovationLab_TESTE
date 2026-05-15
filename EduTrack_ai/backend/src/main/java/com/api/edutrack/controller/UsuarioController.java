@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.api.edutrack.dto.UsuarioMeResponseDTO;
 import com.api.edutrack.dto.UsuarioAtualizarRequestDTO;
+import com.api.edutrack.dto.UsuarioFotoRequestDTO;
 import com.api.edutrack.entity.Usuario;
 import com.api.edutrack.service.UsuarioAutenticadoService;
 import com.api.edutrack.service.UsuarioService;
@@ -54,5 +56,15 @@ public class UsuarioController {
         Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();
         usuarioService.excluirUsuario(usuario);
         return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/me/foto")
+    public ResponseEntity<?> atualizarFoto(@Validated @RequestBody UsuarioFotoRequestDTO dto) {
+        Usuario usuario = usuarioAutenticadoService.obterUsuarioLogado();
+        Usuario atualizado = usuarioService.atualizarFoto(usuario, dto.getFotoUrl());
+        boolean ehSocial = atualizado.getSenha() == null || atualizado.getSenha().isBlank();
+        
+        return ResponseEntity.ok(
+            new UsuarioMeResponseDTO(atualizado.getId(), atualizado.getNome(), atualizado.getEmail(), atualizado.getFotoUrl(), ehSocial)
+        );
     }
 }

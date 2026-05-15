@@ -19,12 +19,18 @@ export function LayoutLogado() {
     carregarUsuario()
   }, [])
 
+  const atualizarFotoNoEstado = (novaUrl) => {
+    setUsuario(prev => ({ ...prev, fotoUrl: novaUrl }))
+  }
+
   return (
     <div className="layout-logado">
       <div className="layout-conteudo">
         <NavbarPrincipal 
           nomeUsuario={usuario.nome} 
-          fotoUrl={usuario.fotoUrl} 
+          fotoUrl={usuario.fotoUrl}
+          ehSocial={usuario.ehSocial}
+          aoAtualizarFoto={atualizarFotoNoEstado}
         />
         <Outlet />
       </div>

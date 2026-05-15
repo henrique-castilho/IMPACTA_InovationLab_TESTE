@@ -53,7 +53,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (resposta) => resposta,
   (erro) => {
-    if (erro.response && erro.response.status === 401) {
+    const isLoginPage = window.location.pathname === '/login'
+    const isAuthEndpoint = erro.config?.url?.includes('/auth/login')
+
+    // Só redireciona se não for uma tentativa de login e não estivermos já na página de login
+    if (erro.response && erro.response.status === 401 && !isLoginPage && !isAuthEndpoint) {
       limparSessao()
       window.location.href = '/login'
     }

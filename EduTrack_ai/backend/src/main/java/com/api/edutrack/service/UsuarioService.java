@@ -48,6 +48,18 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
+    public Usuario atualizarFoto(Usuario usuario, String novaFotoUrl) {
+        boolean ehUsuarioSocial = (usuario.getSenha() == null || usuario.getSenha().isBlank());
+
+        if (ehUsuarioSocial) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Usuários vinculados ao Google não podem alterar a foto manualmente.");
+        }
+
+        usuario.setFotoUrl(novaFotoUrl);
+        return usuarioRepository.save(usuario);
+    }
+
     public void excluirUsuario(Usuario usuario) {
         usuarioRepository.delete(usuario);
     }

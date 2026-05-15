@@ -66,12 +66,9 @@ public class AuthService {
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais invalidas"));
 
-        if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Conta criada com Google. Use o login social.");
-        }
-        
-        if (!passwordEncoder.matches(request.getSenha(), usuario.getSenha())) {
+        // Se for uma conta social (sem senha), ou se a senha não bater, retornamos a mesma mensagem genérica
+        if (usuario.getSenha() == null || usuario.getSenha().isBlank() || 
+            !passwordEncoder.matches(request.getSenha(), usuario.getSenha())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais invalidas");
         }
 
