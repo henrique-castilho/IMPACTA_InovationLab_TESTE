@@ -6,8 +6,8 @@ export function RotaProtegida({ children }) {
   const token = obterToken()
 
   if (!token) {
-    // Se nao houver token, redireciona para o login
-    return <Navigate to="/login" replace state={{ from: location }} />
+    // Se nao houver token, redireciona para a Landing Page
+    return <Navigate to="/" replace state={{ from: location }} />
   }
 
   // Se houver token, renderiza os filhos (o Layout ou a Tela)

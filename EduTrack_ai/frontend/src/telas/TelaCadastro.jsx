@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IconeVisibilidade } from '../componentes/IconeVisibilidade'
 import { ToggleTema } from '../componentes/ToggleTema'
-import api, { CHAVE_TOKEN, CHAVE_USER_ID } from '../services/api'
+import api, { CHAVE_TOKEN, CHAVE_USER_ID, obterToken } from '../services/api'
 import './TelaCadastro.css'
 
 export function TelaCadastro() {
@@ -15,7 +15,7 @@ export function TelaCadastro() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const token = window.localStorage.getItem(CHAVE_TOKEN)
+    const token = obterToken()
     if (token) {
       navigate('/dashboard', { replace: true })
     }
@@ -31,6 +31,8 @@ export function TelaCadastro() {
       
       // Salva o token e o ID retornado para logar automaticamente
       const { token, userId } = resposta.data
+      
+      // Por padrão, ao se cadastrar, vamos usar localStorage para manter logado
       window.localStorage.setItem(CHAVE_TOKEN, token)
       window.localStorage.setItem(CHAVE_USER_ID, userId)
       

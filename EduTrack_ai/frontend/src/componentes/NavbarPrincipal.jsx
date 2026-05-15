@@ -10,7 +10,7 @@ export function NavbarPrincipal({ nomeUsuario }) {
 
   function handleSair() {
     limparSessao()
-    navigate('/login')
+    navigate('/')
   }
 
   const toggleMenu = () => setMenuAberto(!menuAberto)

@@ -8,6 +8,7 @@ import { TelaDashboard } from './telas/TelaDashboard'
 import { TelaDisciplinas } from './telas/TelaDisciplinas'
 import { TelaEsqueciSenha } from './telas/TelaEsqueciSenha'
 import { TelaInsights } from './telas/TelaInsights'
+import { TelaLanding } from './telas/TelaLanding'
 import { TelaLogin } from './telas/TelaLogin'
 import { TelaPerfil } from './telas/TelaPerfil'
 import { TelaTarefas } from './telas/TelaTarefas'
@@ -30,7 +31,7 @@ function App() {
   useEffect(() => {
     const escutarSaida = (event) => {
       if (event.key === CHAVE_TOKEN && !event.newValue) {
-        window.location.href = '/login'
+        window.location.href = '/'
       }
     }
     window.addEventListener('storage', escutarSaida)
@@ -39,7 +40,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<TelaLanding />} />
       <Route path="/login" element={<TelaLogin />} />
       <Route path="/cadastro" element={<TelaCadastro />} />
       <Route path="/esqueci-senha" element={<TelaEsqueciSenha />} />
@@ -59,7 +60,7 @@ function App() {
         <Route path="/tarefas" element={<TelaTarefas />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

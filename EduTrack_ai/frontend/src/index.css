@@ -121,3 +121,28 @@ body.dark-mode input[type='month']::-webkit-calendar-picker-indicator {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
+
+/* Scrollbar Personalizada */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cor-fundo);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--cor-primaria) 30%, var(--cor-borda));
+  border-radius: 10px;
+  border: 2px solid var(--cor-fundo);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cor-primaria);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cor-primaria) var(--cor-fundo);
+}
